@@ -72,7 +72,7 @@ public class AuthController : ControllerBase
             var frontendUrl = _configuration["Frontend:Url"];
 
             var linkConfirmacao =
-                $"{frontendUrl}/confirmar-email?email={emailEncoded}&token={tokenEncoded}";
+                $"{frontendUrl}/confirm-email?email={emailEncoded}&token={tokenEncoded}";
 
             var html = $@"
                 <h2>Confirme seu e-mail</h2>
@@ -184,7 +184,7 @@ public class AuthController : ControllerBase
             var frontendUrl = _configuration["Frontend:Url"];
 
             var link =
-                $"{frontendUrl}/resetar-senha?email={emailEncoded}&token={tokenEncoded}";
+                $"{frontendUrl}/reset-password?email={emailEncoded}&token={tokenEncoded}";
 
             var html = $@"
                 <h2>Recuperação de senha</h2>
@@ -301,7 +301,7 @@ public class AuthController : ControllerBase
                 var frontendUrl = _configuration["Frontend:Url"];
 
                 var linkConfirmacao =
-                    $"{frontendUrl}/confirmar-email?email={emailEncoded}&token={tokenEncoded}";
+                    $"{frontendUrl}/confirm-email?email={emailEncoded}&token={tokenEncoded}";
 
                 var html = $@"
                 <h2>Confirme seu e-mail</h2>
