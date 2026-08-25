@@ -62,7 +62,13 @@ public class AuthController : ControllerBase
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            await _userManager.AddToRoleAsync(user, "Cliente");
+            var roleResult = await _userManager.AddToRoleAsync(user, "Cliente");
+
+            if (!roleResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(user);
+                return BadRequest(roleResult.Errors);
+            }
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -240,6 +246,7 @@ public class AuthController : ControllerBase
         try
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
+            var usuarioCriado = false;
 
             if (user is null)
             {
@@ -257,15 +264,41 @@ public class AuthController : ControllerBase
 
                 if (!result.Succeeded)
                     return BadRequest(result.Errors);
+
+                usuarioCriado = true;
+            }
+            else if (!await _userManager.CheckPasswordAsync(user, request.Senha))
+            {
+                return Unauthorized("E-mail ou senha inválidos.");
             }
 
             if (await _userManager.IsInRoleAsync(user, "Prestador"))
                 return BadRequest("Este usuário já é prestador.");
 
-            if (await _userManager.IsInRoleAsync(user, "Cliente"))
-                await _userManager.RemoveFromRoleAsync(user, "Cliente");
+            var adicionarPrestadorResult = await _userManager.AddToRoleAsync(user, "Prestador");
 
-            await _userManager.AddToRoleAsync(user, "Prestador");
+            if (!adicionarPrestadorResult.Succeeded)
+            {
+                if (usuarioCriado)
+                    await _userManager.DeleteAsync(user);
+
+                return BadRequest(adicionarPrestadorResult.Errors);
+            }
+
+            if (await _userManager.IsInRoleAsync(user, "Cliente"))
+            {
+                var removerClienteResult = await _userManager.RemoveFromRoleAsync(user, "Cliente");
+
+                if (!removerClienteResult.Succeeded)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, "Prestador");
+
+                    if (usuarioCriado)
+                        await _userManager.DeleteAsync(user);
+
+                    return BadRequest(removerClienteResult.Errors);
+                }
+            }
 
             var prestadorExistente = _context.Prestadores
                 .FirstOrDefault(x => x.UsuarioId == user.Id);

@@ -1,9 +1,9 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { getHttpErrorMessage } from '../../../core/utils/http-error-message';
 
 @Component({
   selector: 'app-reset-password',
@@ -52,24 +52,12 @@ export class ResetPasswordComponent implements OnInit {
         this.form.controls.novaSenha.reset();
       },
       error: (error) => {
-        this.error = this.getErrorMessage(error, 'Nao foi possivel redefinir sua senha.');
+        this.error = getHttpErrorMessage(error, 'Nao foi possivel redefinir sua senha.');
       },
     });
   }
 
   protected togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
-  }
-
-  private getErrorMessage(error: unknown, fallback: string): string {
-    if (error instanceof HttpErrorResponse && typeof error.error === 'string') {
-      return error.error;
-    }
-
-    if (error instanceof HttpErrorResponse && error.error?.mensagem) {
-      return error.error.mensagem;
-    }
-
-    return fallback;
   }
 }

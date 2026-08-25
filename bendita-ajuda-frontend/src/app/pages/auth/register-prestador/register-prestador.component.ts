@@ -1,8 +1,8 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { getHttpErrorMessage } from '../../../core/utils/http-error-message';
 
 @Component({
   selector: 'app-register-prestador',
@@ -44,24 +44,15 @@ export class RegisterPrestadorComponent {
         this.form.reset();
       },
       error: (error) => {
-        this.error = this.getErrorMessage(error, 'Nao foi possivel criar sua conta de prestador.');
+        this.error = getHttpErrorMessage(
+          error,
+          'Nao foi possivel criar sua conta de prestador.',
+        );
       },
     });
   }
 
   protected togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
-  }
-
-  private getErrorMessage(error: unknown, fallback: string): string {
-    if (error instanceof HttpErrorResponse && typeof error.error === 'string') {
-      return error.error;
-    }
-
-    if (error instanceof HttpErrorResponse && error.error?.mensagem) {
-      return error.error.mensagem;
-    }
-
-    return fallback;
   }
 }
