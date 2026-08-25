@@ -195,5 +195,5 @@ jobs:
               RELEASE_DIR="/home/deploy/release-bendita-ajuda"
               [[ "$RELEASE_DIR" == "/home/deploy/release-bendita-ajuda" ]]
               rm -rf -- "$RELEASE_DIR"
-            REMOTE_SCRIPT
+          REMOTE_SCRIPT
           fi
