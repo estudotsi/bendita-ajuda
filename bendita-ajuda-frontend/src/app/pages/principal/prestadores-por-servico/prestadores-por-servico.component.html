@@ -1,0 +1,83 @@
+<main class="providers-page">
+  <section class="providers-hero">
+    <div>
+      <span>Profissionais</span>
+      <h1>Prestadores proximos</h1>
+      <p>Resultado ordenado pela distancia retornada pela plataforma.</p>
+    </div>
+
+    <div class="providers-hero__actions">
+      <button type="button" class="providers-button providers-button--secondary" (click)="voltar()">
+        Nova busca
+      </button>
+
+      <button
+        type="button"
+        class="providers-button"
+        [disabled]="contatosStatus === 'loading' || !prestadores.length"
+        (click)="verificarAgendaGoogle()"
+      >
+        @if (contatosStatus === 'loading') {
+          Verificando...
+        } @else {
+          Encontre conhecidos
+        }
+      </button>
+    </div>
+  </section>
+
+  @if (contatosStatus !== 'idle') {
+    <section class="contacts-consent" aria-live="polite">
+      @if (contatosStatus === 'done') {
+        <p>
+          Verificacao concluida. A agenda foi usada apenas para comparar telefones nesta busca.
+        </p>
+      } @else if (contatosStatus === 'error') {
+        <p>{{ contatosError }}</p>
+      } @else {
+        <p>Lendo seus contatos autorizados pelo Google para comparar somente os telefones.</p>
+      }
+    </section>
+  }
+
+  @if (error) {
+    <section class="providers-panel">
+      <div class="form-message form-message--error">{{ error }}</div>
+    </section>
+  } @else if (prestadores.length) {
+    <section class="providers-grid" aria-label="Prestadores encontrados">
+      @for (prestador of prestadores; track prestador.id) {
+        <article class="provider-card">
+          <div>
+            <span>{{ prestador.distanciaKm | number: '1.1-2' }} km</span>
+            <h2>{{ prestador.nome }}</h2>
+            <p>{{ prestador.cidade }}/{{ prestador.estado }}</p>
+
+            @if (prestadorEstaNaAgenda(prestador)) {
+              <strong class="provider-card__contact-match">
+                <span aria-hidden="true">★</span>
+                Na sua agenda como {{ getNomeAgenda(prestador) }}
+              </strong>
+            }
+          </div>
+
+          <div class="provider-card__actions">
+            <a [routerLink]="['/prestadores', prestador.id, 'agenda']">Ver agenda</a>
+
+            <a
+              [href]="getWhatsappUrl(prestador)"
+              target="_blank"
+              rel="noopener"
+            >
+              Chamar no WhatsApp
+            </a>
+          </div>
+        </article>
+      }
+    </section>
+  } @else {
+    <section class="providers-panel">
+      <p>Buscando profissionais proximos.</p>
+    </section>
+  }
+</main>

@@ -1,0 +1,28 @@
+<header class="admin-header">
+  <input type="checkbox" id="admin-menu-toggle" />
+
+  <div class="admin-header__inner">
+    <a routerLink="/admin" class="admin-header__logo">Bendita Ajuda</a>
+
+    <nav class="admin-header__nav">
+      <a routerLink="/admin">Servicos</a>
+    </nav>
+
+    <div class="admin-header__actions">
+      <button type="button" class="admin-header__logout" (click)="logout()">Sair</button>
+    </div>
+
+    <label for="admin-menu-toggle" class="admin-header__toggle" aria-label="Abrir menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+  </div>
+
+  <nav class="admin-header__mobile-menu">
+    <a routerLink="/admin">Servicos</a>
+    <button type="button" class="admin-header__logout" (click)="logout()">Sair</button>
+  </nav>
+</header>
+
+<router-outlet />

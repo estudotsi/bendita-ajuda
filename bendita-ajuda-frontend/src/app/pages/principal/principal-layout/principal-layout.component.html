@@ -1,0 +1,40 @@
+<header class="header">
+  <input type="checkbox" id="menu-toggle" />
+  <div class="header__inner">
+    <a routerLink="/" class="header__logo">Bendita Ajuda</a>
+
+    <nav class="header__nav">
+      <a routerLink="/" fragment="categorias">Categorias</a>
+      <a routerLink="/" fragment="como-funciona">Como funciona</a>
+      <a routerLink="/" fragment="vantagens">Vantagens</a>
+      <a routerLink="/" fragment="depoimentos">Depoimentos</a>
+    </nav>
+
+    <div class="header__actions">
+      <a routerLink="/login" class="btn-login">Entrar</a>
+      <a routerLink="/register-prestador" class="btn-cta">Quero ser prestador</a>
+      <a routerLink="/register" class="btn-cta">Criar Conta de usuário</a>
+    </div>
+
+    <label for="menu-toggle" class="header__toggle" aria-label="Abrir menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+  </div>
+
+  <nav class="header__mobile-menu">
+    <a routerLink="/" fragment="categorias">Categorias</a>
+    <a routerLink="/" fragment="como-funciona">Como funciona</a>
+    <a routerLink="/" fragment="vantagens">Vantagens</a>
+    <a routerLink="/" fragment="depoimentos">Depoimentos</a>
+
+    <div class="header__mobile-actions">
+      <a routerLink="/login" class="btn-login">Entrar</a>
+      <a routerLink="/register-prestador" class="btn-cta">Quero ser prestador</a>
+      <a routerLink="/register" class="btn-cta">Criar Conta de usuário</a>
+    </div>
+  </nav>
+</header>
+
+<router-outlet />

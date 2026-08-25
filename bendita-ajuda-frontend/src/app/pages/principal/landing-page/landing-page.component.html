@@ -1,0 +1,257 @@
+<main>
+  <section class="hero">
+    <div class="hero__content">
+      <h1>Encontre o profissional ideal perto de você</h1>
+      <p>
+        Compare orçamentos, veja avaliações e contrate com segurança. Milhares
+        de profissionais prontos para atender você.
+      </p>
+
+      <div class="hero__search">
+        <div class="hero__search-inner">
+          <input
+            type="text"
+            [(ngModel)]="termoBuscaServico"
+            placeholder="Filtrar serviço"
+            aria-label="Filtrar serviço"
+          />
+          <select [(ngModel)]="servicoSelecionadoId" aria-label="Selecionar serviço">
+            <option [ngValue]="null">Selecione um serviço</option>
+            @for (servico of servicosFiltrados; track servico.id) {
+              <option [ngValue]="servico.id">{{ servico.nome }}</option>
+            }
+          </select>
+          <button class="btn-search" type="button" (click)="buscarProfissionais()">
+            Buscar profissionais
+          </button>
+        </div>
+        @if (buscaError) {
+          <p class="hero__search-error">{{ buscaError }}</p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section id="categorias" class="section text-center">
+    <div class="container">
+      <h2 class="section__title">Categorias populares</h2>
+      <p class="section__subtitle">
+        Encontre profissionais qualificados nas mais diversas áreas de serviço.
+      </p>
+
+      <div class="categories__grid">
+        <div class="category-card">
+          <span class="category-card__icon">🧹</span>
+          <span class="category-card__name">Diarista</span>
+        </div>
+        <div class="category-card">
+          <span class="category-card__icon">⚡</span>
+          <span class="category-card__name">Eletricista</span>
+        </div>
+        <div class="category-card">
+          <span class="category-card__icon">🔧</span>
+          <span class="category-card__name">Encanador</span>
+        </div>
+        <div class="category-card">
+          <span class="category-card__icon">🎨</span>
+          <span class="category-card__name">Pintor</span>
+        </div>
+        <div class="category-card">
+          <span class="category-card__icon">🪑</span>
+          <span class="category-card__name">Montador de Móveis</span>
+        </div>
+        <div class="category-card">
+          <span class="category-card__icon">📚</span>
+          <span class="category-card__name">Professor Particular</span>
+        </div>
+        <div class="category-card">
+          <span class="category-card__icon">🧱</span>
+          <span class="category-card__name">Pedreiro</span>
+        </div>
+        <div class="category-card">
+          <span class="category-card__icon">💪</span>
+          <span class="category-card__name">Personal Trainer</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="como-funciona" class="section section--alt text-center">
+    <div class="container">
+      <h2 class="section__title">Como funciona</h2>
+      <p class="section__subtitle">
+        Contratar um profissional nunca foi tão simples.
+      </p>
+
+      <div class="steps__grid">
+        <div class="step">
+          <div class="step__icon">🔍</div>
+          <p class="step__label">Passo 01</p>
+          <h3 class="step__title">Busque o serviço</h3>
+          <p class="step__desc">
+            Digite o que precisa e sua localização. Em segundos, encontre
+            profissionais qualificados na sua região.
+          </p>
+        </div>
+        <div class="step">
+          <div class="step__icon">⭐</div>
+          <p class="step__label">Passo 02</p>
+          <h3 class="step__title">Compare profissionais</h3>
+          <p class="step__desc">
+            Veja perfis, avaliações de outros clientes e orçamentos. Escolha
+            quem melhor atende às suas necessidades.
+          </p>
+        </div>
+        <div class="step">
+          <div class="step__icon">📅</div>
+          <p class="step__label">Passo 03</p>
+          <h3 class="step__title">Agende com facilidade</h3>
+          <p class="step__desc">
+            Entre em contato direto com o profissional, combine os detalhes e
+            agende o serviço com total praticidade.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="vantagens" class="section text-center">
+    <div class="container">
+      <h2 class="section__title">Por que escolher o ServiçoJá?</h2>
+      <p class="section__subtitle">
+        Tudo o que você precisa para encontrar e contratar profissionais com
+        confiança.
+      </p>
+
+      <div class="advantages__grid">
+        <div class="advantage-card">
+          <span class="advantage-card__icon">⚡</span>
+          <h3 class="advantage-card__title">Agilidade</h3>
+          <p class="advantage-card__desc">
+            Receba orçamentos em minutos e resolva o que precisa no mesmo dia.
+          </p>
+        </div>
+        <div class="advantage-card">
+          <span class="advantage-card__icon">🛡️</span>
+          <h3 class="advantage-card__title">Segurança</h3>
+          <p class="advantage-card__desc">
+            Profissionais verificados e avaliações reais de outros clientes para
+            sua tranquilidade.
+          </p>
+        </div>
+        <div class="advantage-card">
+          <span class="advantage-card__icon">🤝</span>
+          <h3 class="advantage-card__title">Variedade</h3>
+          <p class="advantage-card__desc">
+            Milhares de profissionais em centenas de categorias diferentes em
+            todo o Brasil.
+          </p>
+        </div>
+        <div class="advantage-card">
+          <span class="advantage-card__icon">💰</span>
+          <h3 class="advantage-card__title">Praticidade</h3>
+          <p class="advantage-card__desc">
+            Compare preços, negocie diretamente e contrate sem burocracia.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="prestador" class="provider">
+    <div class="container">
+      <span class="provider__label">Para profissionais</span>
+      <h2>Você é um profissional? Conquiste novos clientes todos os dias</h2>
+      <p>
+        Cadastre-se gratuitamente, receba pedidos de serviço na sua região e
+        aumente sua renda com a maior plataforma de serviços do Brasil.
+      </p>
+      <a routerLink="/register-prestador" class="btn-accent">Cadastro</a>
+    </div>
+  </section>
+
+  <section id="depoimentos" class="section section--alt text-center">
+    <div class="container">
+      <h2 class="section__title">O que nossos clientes dizem</h2>
+      <p class="section__subtitle">
+        Milhares de pessoas já encontraram o profissional certo pelo ServiçoJá.
+      </p>
+
+      <div class="testimonials__grid">
+        <div class="testimonial-card">
+          <div class="testimonial-card__stars">★★★★★</div>
+          <p class="testimonial-card__text">
+            "Encontrei uma diarista excelente em menos de 10 minutos. O
+            processo foi super simples e ela fez um trabalho impecável.
+            Recomendo demais!"
+          </p>
+          <p class="testimonial-card__name">Camila Rodrigues</p>
+          <p class="testimonial-card__location">São Paulo, SP</p>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-card__stars">★★★★★</div>
+          <p class="testimonial-card__text">
+            "Precisei de um eletricista urgente e consegui agendar para o mesmo
+            dia. Profissional pontual, educado e com preço justo. Nota 10!"
+          </p>
+          <p class="testimonial-card__name">Rafael Mendes</p>
+          <p class="testimonial-card__location">Rio de Janeiro, RJ</p>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-card__stars">★★★★★</div>
+          <p class="testimonial-card__text">
+            "Uso a plataforma sempre que preciso de algum serviço em casa. Já
+            contratei pintor, encanador e montador de móveis. Todos ótimos
+            profissionais."
+          </p>
+          <p class="testimonial-card__name">Juliana Costa</p>
+          <p class="testimonial-card__location">Belo Horizonte, MG</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <p class="footer__brand">ServiçoJá</p>
+        <p class="footer__desc">
+          A plataforma que conecta você aos melhores profissionais da sua
+          região, com segurança e praticidade.
+        </p>
+      </div>
+
+      <div>
+        <h4>Institucional</h4>
+        <ul>
+          <li><a href="#">Sobre nós</a></li>
+          <li><a href="#">Como funciona</a></li>
+          <li><a href="#">Termos de uso</a></li>
+          <li><a href="#">Política de privacidade</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Contato</h4>
+        <ul>
+          <li>contato@benditaajuda.com.br</li>
+          <li>(61) 99999-0000</li>
+          <li>Brasilia, SP - Brasil</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Redes Sociais</h4>
+        <div class="footer__socials">
+          <a href="#" class="footer__social-icon" aria-label="Instagram">📷</a>
+          <a href="#" class="footer__social-icon" aria-label="Facebook">📘</a>
+          <a href="#" class="footer__social-icon" aria-label="LinkedIn">💼</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer__bottom">© 2026 Bendita Ajuda. Todos os direitos reservados.</div>
+  </div>
+</footer>

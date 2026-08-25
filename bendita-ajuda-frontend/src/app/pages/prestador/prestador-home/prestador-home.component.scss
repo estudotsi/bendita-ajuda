@@ -1,0 +1,132 @@
+.prestador-dashboard {
+  min-height: 100vh;
+  padding: 6rem 1rem 3rem;
+  background:
+    radial-gradient(circle at top right, hsla(152, 55%, 42%, 0.14), transparent 34rem),
+    var(--bg);
+}
+
+.dashboard-hero,
+.dashboard-grid {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+}
+
+.dashboard-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.dashboard-hero span,
+.dashboard-card > span {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboard-hero h1 {
+  margin-top: 0.5rem;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.dashboard-hero p,
+.dashboard-card p,
+dd {
+  color: var(--fg-muted);
+}
+
+.dashboard-hero a {
+  flex: 0 0 auto;
+  padding: 0.9rem 1.2rem;
+  border-radius: var(--radius);
+  background: var(--primary);
+  box-shadow: var(--shadow-button);
+  color: var(--primary-fg);
+  font-weight: 800;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.dashboard-card {
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+
+.dashboard-card--wide {
+  grid-column: 1 / -1;
+}
+
+.dashboard-card h2 {
+  margin: 0.4rem 0 1rem;
+  font-size: 1.25rem;
+}
+
+dl {
+  display: grid;
+  gap: 0.85rem;
+}
+
+dt {
+  color: var(--fg);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+dd {
+  margin: 0;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.tag-list span {
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  background: hsla(152, 55%, 42%, 0.12);
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.tag-list--warning span {
+  background: hsla(38, 92%, 55%, 0.16);
+  color: hsl(33, 90%, 34%);
+}
+
+@media (max-width: 760px) {
+  .dashboard-hero,
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-hero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dashboard-hero a {
+    text-align: center;
+  }
+}

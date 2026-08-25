@@ -1,0 +1,80 @@
+<main class="public-agenda-page">
+  <section class="public-agenda-hero">
+    <div>
+      <span>Disponibilidade</span>
+      <h1>Agenda do prestador</h1>
+      <p>Confira os horarios livres e combine o atendimento diretamente com o profissional.</p>
+    </div>
+  </section>
+
+  @if (info) {
+    <section class="public-agenda-card">
+      <div class="form-message form-message--success">{{ info }}</div>
+    </section>
+  }
+
+  @if (error) {
+    <section class="public-agenda-card">
+      <div class="form-message form-message--error">{{ error }}</div>
+    </section>
+  } @else if (carregando) {
+    <section class="public-agenda-card">
+      <p>Carregando agenda.</p>
+    </section>
+  } @else if (agenda.length) {
+    <section class="public-agenda-months" aria-label="Agenda publica do prestador">
+      <div class="public-period-tabs" aria-label="Meses com horarios disponiveis">
+        @for (mes of agenda; track getMesKey(mes)) {
+          <button
+            type="button"
+            [class.public-period-tabs__button--active]="getMesKey(mes) === mesSelecionadoKey"
+            (click)="selecionarMes(mes)"
+          >
+            <span>{{ mes.nomeMes }}</span>
+            <strong>{{ mes.ano }}</strong>
+          </button>
+        }
+      </div>
+
+      @if (mesSelecionado; as mes) {
+        <article class="public-month-card">
+          <h2>{{ mes.nomeMes }} {{ mes.ano }}</h2>
+
+          <div class="public-day-tabs" aria-label="Dias com horarios disponiveis">
+            @for (dia of mes.dias; track dia.data) {
+              <button
+                type="button"
+                [class.public-day-tabs__button--active]="getDiaKey(dia.data) === diaSelecionadoKey"
+                (click)="selecionarDia(dia.data)"
+              >
+                <span>{{ dia.diaSemana }}</span>
+                <strong>{{ formatarDataDia(dia.data) }}</strong>
+              </button>
+            }
+          </div>
+
+          @if (diaSelecionado; as dia) {
+            <section class="public-day-card">
+              <header>
+                <span>{{ dia.diaSemana }}</span>
+                <strong>{{ formatarDataDia(dia.data) }}</strong>
+              </header>
+
+              <div class="public-schedule-list">
+                @for (horario of dia.horarios; track horario.id) {
+                  <button type="button" (click)="selecionarHorario(horario)">
+                    {{ horario.horaInicio }} as {{ horario.horaFim }}
+                  </button>
+                }
+              </div>
+            </section>
+          }
+        </article>
+      }
+    </section>
+  } @else {
+    <section class="public-agenda-card">
+      <p>Esse prestador ainda nao tem horarios disponiveis.</p>
+    </section>
+  }
+</main>

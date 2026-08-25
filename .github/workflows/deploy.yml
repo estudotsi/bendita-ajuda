@@ -1,0 +1,199 @@
+name: Deploy Bendita Ajuda
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-bendita-ajuda-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      BACKEND_PROJECT: bendita-ajuda-backend/bendita-ajuda-backend/bendita-ajuda-backend.csproj
+      FRONTEND_DIR: bendita-ajuda-frontend
+      REMOTE_RELEASE: /home/deploy/release-bendita-ajuda
+      REMOTE_API: /var/www/bendita-ajuda/api
+      REMOTE_FRONTEND: /var/www/bendita-ajuda/front
+      API_SERVICE: bendita-ajuda-api.service
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore "$BACKEND_PROJECT"
+
+      - name: Publish backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ./deploy/backend
+          dotnet publish "$BACKEND_PROJECT" \
+            --configuration Release \
+            --no-restore \
+            --output ./deploy/backend
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: bendita-ajuda-frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: bendita-ajuda-frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+
+      - name: Build frontend for production
+        working-directory: bendita-ajuda-frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build -- --configuration production
+
+      - name: Collect Nginx frontend files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DIST_DIR="$FRONTEND_DIR/dist"
+          mapfile -d '' WEB_ROOTS < <(find "$DIST_DIR" -type f -name index.html -printf '%h\0')
+
+          if [[ ${#WEB_ROOTS[@]} -ne 1 ]]; then
+            echo "Expected exactly one browser output containing index.html under $DIST_DIR; found ${#WEB_ROOTS[@]}." >&2
+            printf 'Candidate: %s\n' "${WEB_ROOTS[@]:-<none>}" >&2
+            exit 1
+          fi
+
+          WEB_ROOT="${WEB_ROOTS[0]}"
+          mkdir -p ./deploy/frontend
+          cp -a "$WEB_ROOT"/. ./deploy/frontend/
+
+      - name: Configure SSH
+        id: ssh_setup
+        shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_SSH_PRIVATE_KEY_BASE64: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s' "$VPS_SSH_PRIVATE_KEY_BASE64" | base64 --decode > "$HOME/.ssh/id_deploy"
+          chmod 600 "$HOME/.ssh/id_deploy"
+          ssh-keyscan -H "$VPS_HOST" >> "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Create temporary directories on VPS
+        shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+          ssh -i "$HOME/.ssh/id_deploy" "${VPS_USER}@${VPS_HOST}" 'bash -se' <<'REMOTE_SCRIPT'
+            set -euo pipefail
+            RELEASE_DIR="/home/deploy/release-bendita-ajuda"
+            [[ "$RELEASE_DIR" == "/home/deploy/release-bendita-ajuda" ]]
+            rm -rf -- "$RELEASE_DIR"
+            mkdir -p "$RELEASE_DIR/backend" "$RELEASE_DIR/frontend"
+          REMOTE_SCRIPT
+
+      - name: Upload backend and frontend
+        shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+          scp -i "$HOME/.ssh/id_deploy" -r ./deploy/backend/. \
+            "${VPS_USER}@${VPS_HOST}:${REMOTE_RELEASE}/backend/"
+          scp -i "$HOME/.ssh/id_deploy" -r ./deploy/frontend/. \
+            "${VPS_USER}@${VPS_HOST}:${REMOTE_RELEASE}/frontend/"
+
+      - name: Publish release and restart API
+        shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+          ssh -i "$HOME/.ssh/id_deploy" "${VPS_USER}@${VPS_HOST}" 'bash -se' <<'REMOTE_SCRIPT'
+            set -euo pipefail
+
+            RELEASE_DIR="/home/deploy/release-bendita-ajuda"
+            API_DIR="/var/www/bendita-ajuda/api"
+            FRONT_DIR="/var/www/bendita-ajuda/front"
+            SERVICE="bendita-ajuda-api.service"
+
+            [[ "$RELEASE_DIR" == "/home/deploy/release-bendita-ajuda" ]]
+            [[ "$API_DIR" == "/var/www/bendita-ajuda/api" ]]
+            [[ "$FRONT_DIR" == "/var/www/bendita-ajuda/front" ]]
+            test -n "$(find "$RELEASE_DIR/backend" -mindepth 1 -print -quit)"
+            test -f "$RELEASE_DIR/frontend/index.html"
+
+            mkdir -p "$API_DIR" "$FRONT_DIR"
+            find "$API_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+            find "$FRONT_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+            cp -a "$RELEASE_DIR/backend"/. "$API_DIR"/
+            cp -a "$RELEASE_DIR/frontend"/. "$FRONT_DIR"/
+
+            if ! sudo -n /usr/bin/systemctl restart "$SERVICE"; then
+              systemctl status "$SERVICE" --no-pager --full || true
+              exit 1
+            fi
+
+            sleep 5
+
+            if ! systemctl is-active --quiet "$SERVICE"; then
+              systemctl status "$SERVICE" --no-pager --full || true
+              exit 1
+            fi
+
+            echo "Service $SERVICE is active."
+
+            # No endpoint /api/health or production domain is currently configured.
+            # After both exist, insert the real domain and enable this check:
+            # curl --fail --silent --show-error https://SEU-DOMINIO/api/health
+          REMOTE_SCRIPT
+
+      - name: Clean temporary release on VPS
+        if: ${{ always() }}
+        continue-on-error: true
+        shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+
+          if [[ -n "${VPS_HOST:-}" && -n "${VPS_USER:-}" && -f "$HOME/.ssh/id_deploy" ]]; then
+            ssh -i "$HOME/.ssh/id_deploy" "${VPS_USER}@${VPS_HOST}" 'bash -se' <<'REMOTE_SCRIPT'
+              set -euo pipefail
+              RELEASE_DIR="/home/deploy/release-bendita-ajuda"
+              [[ "$RELEASE_DIR" == "/home/deploy/release-bendita-ajuda" ]]
+              rm -rf -- "$RELEASE_DIR"
+            REMOTE_SCRIPT
+          fi

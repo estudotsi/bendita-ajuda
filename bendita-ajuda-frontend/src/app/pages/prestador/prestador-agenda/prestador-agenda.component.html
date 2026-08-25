@@ -1,0 +1,138 @@
+<main class="agenda-page">
+  <section class="agenda-hero">
+    <div>
+      <span>Agenda</span>
+      <h1>Minha agenda</h1>
+      <p>Crie horarios de atendimento e mantenha sua disponibilidade organizada.</p>
+    </div>
+  </section>
+
+  <section class="agenda-card">
+    <form [formGroup]="agendaForm" class="agenda-form" (ngSubmit)="gerarHorarios()">
+      <label>
+        Data
+        <input type="date" formControlName="data" />
+      </label>
+
+      <label>
+        Hora inicio
+        <select formControlName="horaInicio">
+          <option value="">Selecione</option>
+          @for (hora of horasCheias; track hora) {
+            <option [value]="hora">{{ hora }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        Hora fim
+        <select formControlName="horaFim">
+          <option value="">Selecione</option>
+          @for (hora of horasCheias; track hora) {
+            <option [value]="hora">{{ hora }}</option>
+          }
+        </select>
+      </label>
+
+      <button type="submit" [disabled]="gerando">
+        {{ gerando ? 'Gerando...' : 'Gerar horarios' }}
+      </button>
+    </form>
+
+    @if (agendaForm.hasError('horaFimMenorOuIgual') && agendaForm.touched) {
+      <div class="form-message form-message--error">A hora fim deve ser maior que a hora inicio.</div>
+    }
+
+    @if (agendaForm.hasError('horaInicioNaoCheia') && agendaForm.touched) {
+      <div class="form-message form-message--error">
+        A hora inicial deve ser em hora cheia. Exemplo: 08:00, 09:00, 10:00.
+      </div>
+    }
+
+    @if (agendaForm.hasError('horaFimNaoCheia') && agendaForm.touched) {
+      <div class="form-message form-message--error">
+        A hora fim deve ser em hora cheia. Exemplo: 08:00, 09:00, 10:00.
+      </div>
+    }
+
+    @if (success) {
+      <div class="form-message form-message--success">{{ success }}</div>
+    }
+
+    @if (error) {
+      <div class="form-message form-message--error">{{ error }}</div>
+    }
+  </section>
+
+  @if (carregando) {
+    <section class="agenda-card">
+      <p>Carregando agenda.</p>
+    </section>
+  } @else if (agenda.length) {
+    <section class="agenda-months" aria-label="Minha agenda cadastrada">
+      <div class="period-tabs" aria-label="Meses com horarios">
+        @for (mes of agenda; track getMesKey(mes)) {
+          <button
+            type="button"
+            [class.period-tabs__button--active]="getMesKey(mes) === mesSelecionadoKey"
+            (click)="selecionarMes(mes)"
+          >
+            <span>{{ mes.nomeMes }}</span>
+            <strong>{{ mes.ano }}</strong>
+          </button>
+        }
+      </div>
+
+      @if (mesSelecionado; as mes) {
+        <article class="month-card">
+          <h2>{{ mes.nomeMes }} {{ mes.ano }}</h2>
+
+          <div class="day-tabs" aria-label="Dias com horarios">
+            @for (dia of mes.dias; track dia.data) {
+              <button
+                type="button"
+                [class.day-tabs__button--active]="getDiaKey(dia.data) === diaSelecionadoKey"
+                (click)="selecionarDia(dia.data)"
+              >
+                <span>{{ dia.diaSemana }}</span>
+                <strong>{{ formatarDataDia(dia.data) }}</strong>
+              </button>
+            }
+          </div>
+
+          @if (diaSelecionado; as dia) {
+            <section class="day-card">
+              <header>
+                <span>{{ dia.diaSemana }}</span>
+                <strong>{{ formatarDataDia(dia.data) }}</strong>
+              </header>
+
+              <div class="schedule-list">
+                @for (horario of dia.horarios; track horario.id) {
+                  <div class="schedule-item" [class.schedule-item--busy]="!isLivre(horario)">
+                    <span>{{ horario.horaInicio }} - {{ horario.horaFim }}</span>
+                    <strong>{{ horario.status }}</strong>
+
+                    @if (isLivre(horario)) {
+                      <button
+                        type="button"
+                        (click)="cancelarHorario(horario)"
+                        [disabled]="horarioCancelandoId === horario.id"
+                      >
+                        {{ horarioCancelandoId === horario.id ? 'Cancelando...' : 'Cancelar horario' }}
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </section>
+          }
+        </article>
+      }
+    </section>
+  } @else {
+    <section class="agenda-card">
+      <p>{{ info || 'Voce ainda nao tem horarios cadastrados.' }}</p>
+    </section>
+  }
+</main>

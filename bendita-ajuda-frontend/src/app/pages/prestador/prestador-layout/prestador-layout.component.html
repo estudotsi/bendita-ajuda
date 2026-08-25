@@ -1,0 +1,34 @@
+<header class="prestador-header">
+  <input type="checkbox" id="prestador-menu-toggle" />
+
+  <div class="prestador-header__inner">
+    <a routerLink="/prestador/home" class="prestador-header__logo">Bendita Ajuda</a>
+
+    <nav class="prestador-header__nav">
+      <a routerLink="/prestador/home">Home</a>
+      <a routerLink="/prestador/completar-cadastro">Cadastro</a>
+      <a routerLink="/prestador/agenda">Agenda</a>
+      <a routerLink="/cliente">Area do cliente</a>
+    </nav>
+
+    <div class="prestador-header__actions">
+      <button type="button" class="prestador-header__logout" (click)="logout()">Sair</button>
+    </div>
+
+    <label for="prestador-menu-toggle" class="prestador-header__toggle" aria-label="Abrir menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+  </div>
+
+  <nav class="prestador-header__mobile-menu">
+    <a routerLink="/prestador/home">Home</a>
+    <a routerLink="/prestador/completar-cadastro">Cadastro</a>
+    <a routerLink="/prestador/agenda">Agenda</a>
+    <a routerLink="/cliente">Area do cliente</a>
+    <button type="button" class="prestador-header__logout" (click)="logout()">Sair</button>
+  </nav>
+</header>
+
+<router-outlet />

@@ -1,0 +1,79 @@
+<main class="prestador-dashboard">
+  @if (error) {
+    <section class="workspace-panel">
+      <div class="form-message form-message--error">{{ error }}</div>
+    </section>
+  } @else if (cadastro) {
+    <section class="dashboard-hero">
+      <div>
+        <span>Prestador</span>
+        <h1>Ola, {{ cadastro.nome }}</h1>
+        <p>Seu cadastro esta completo e pronto para receber a estrutura operacional.</p>
+      </div>
+
+      <a routerLink="/prestador/completar-cadastro">Atualizar cadastro</a>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dashboard-card">
+        <span>Perfil</span>
+        <h2>Dados principais</h2>
+        <dl>
+          <div>
+            <dt>E-mail</dt>
+            <dd>{{ cadastro.email }}</dd>
+          </div>
+          <div>
+            <dt>WhatsApp</dt>
+            <dd>{{ cadastro.telefoneWhatsapp || 'Nao informado' }}</dd>
+          </div>
+        </dl>
+      </article>
+
+      <article class="dashboard-card">
+        <span>Endereco</span>
+        <h2>Area de atendimento</h2>
+        <p>
+          {{ cadastro.rua || 'Rua nao informada' }}, {{ cadastro.numero || 's/n' }}
+          <br />
+          {{ cadastro.bairro || 'Bairro nao informado' }} -
+          {{ cadastro.cidade || 'Cidade nao informada' }}/{{ cadastro.estado || '--' }}
+          <br />
+          CEP {{ cadastro.cep || 'nao informado' }}
+        </p>
+      </article>
+
+      <article class="dashboard-card dashboard-card--wide">
+        <span>Servicos</span>
+        <h2>Servicos ativos</h2>
+        @if (cadastro.servicos.length) {
+          <div class="tag-list">
+            @for (servico of cadastro.servicos; track servico.id) {
+              <span>{{ servico.nome }}</span>
+            }
+          </div>
+        } @else {
+          <p>Nenhum servico ativo vinculado.</p>
+        }
+      </article>
+
+      <article class="dashboard-card dashboard-card--wide">
+        <span>Aprovacao</span>
+        <h2>Servicos aguardando aprovacao</h2>
+        @if (cadastro.servicosAguardandoAprovacao.length) {
+          <div class="tag-list tag-list--warning">
+            @for (servico of cadastro.servicosAguardandoAprovacao; track servico.id) {
+              <span>{{ servico.nome }} - {{ servico.status }}</span>
+            }
+          </div>
+        } @else {
+          <p>Nenhuma sugestao pendente no momento.</p>
+        }
+      </article>
+    </section>
+  } @else {
+    <section class="workspace-panel">
+      <p>Carregando dashboard do prestador.</p>
+    </section>
+  }
+</main>

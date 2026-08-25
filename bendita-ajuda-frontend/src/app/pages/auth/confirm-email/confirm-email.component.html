@@ -1,0 +1,30 @@
+<main class="auth-page">
+  <section class="auth-card">
+    <a routerLink="/" class="auth-back">Voltar para início</a>
+    <span class="auth-eyebrow">Confirmação</span>
+    <h1>Confirmar e-mail</h1>
+    <p>Estamos validando seu link de confirmação.</p>
+
+    @if (error) {
+      <div class="form-message form-message--error">{{ error }}</div>
+    }
+
+    @if (feedback) {
+      <div class="form-message form-message--success">{{ feedback }}</div>
+    }
+
+    <div class="auth-actions">
+      @if (showResetPasswordOption && resetPasswordQueryParams) {
+        <a
+          routerLink="/reset-password"
+          [queryParams]="resetPasswordQueryParams"
+          class="auth-submit auth-submit--link"
+        >
+          Resetar senha
+        </a>
+      }
+
+      <a routerLink="/login" class="auth-submit auth-submit--link">Ir para login</a>
+    </div>
+  </section>
+</main>

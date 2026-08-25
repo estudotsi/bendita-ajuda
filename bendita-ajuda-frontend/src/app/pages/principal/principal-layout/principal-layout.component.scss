@@ -1,0 +1,138 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 100;
+  height: 64px;
+  border-bottom: 1px solid var(--border);
+  background: hsla(0, 0%, 100%, 0.95);
+  backdrop-filter: blur(12px);
+}
+
+.header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.header__logo {
+  color: var(--primary);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.header__nav,
+.header__actions {
+  display: flex;
+  align-items: center;
+}
+
+.header__nav {
+  gap: 2rem;
+}
+
+.header__actions {
+  gap: 0.75rem;
+}
+
+.header__nav a,
+.header__mobile-menu a {
+  color: hsla(220, 20%, 14%, 0.7);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.header__nav a:hover,
+.header__mobile-menu a:hover,
+.btn-login:hover {
+  color: var(--primary);
+}
+
+.btn-login {
+  padding: 0.5rem 1rem;
+  color: hsla(220, 20%, 14%, 0.8);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.btn-cta {
+  display: inline-block;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius);
+  background: var(--primary);
+  box-shadow: var(--shadow-button);
+  color: var(--primary-fg);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.header__toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.header__toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--fg);
+}
+
+.header__mobile-menu {
+  display: none;
+  position: absolute;
+  inset: 64px 0 auto;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+
+.header__mobile-menu a {
+  display: block;
+  padding: 0.625rem 0;
+}
+
+.header__mobile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.header__mobile-actions .btn-cta {
+  text-align: center;
+}
+
+#menu-toggle {
+  display: none;
+}
+
+#menu-toggle:checked ~ .header__mobile-menu {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .header__nav,
+  .header__actions {
+    display: none;
+  }
+
+  .header__toggle {
+    display: flex;
+  }
+}

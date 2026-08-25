@@ -1,0 +1,149 @@
+<main class="prestador-page">
+  <section class="prestador-card">
+    <span class="auth-eyebrow">Prestador</span>
+    <h1>Completar cadastro</h1>
+    <p>Informe seu endereco de atendimento e selecione os servicos que voce oferece.</p>
+
+    <form [formGroup]="enderecoForm" class="auth-form prestador-form">
+      <div class="form-grid">
+        <label>
+          Telefone WhatsApp
+          <span class="phone-field">
+            <span class="phone-field__prefix">+55</span>
+            <input
+              type="tel"
+              formControlName="telefoneWhatsapp"
+              inputmode="numeric"
+              maxlength="15"
+              autocomplete="tel-national"
+              placeholder="(61) 99999-9999"
+              (input)="formatarTelefoneWhatsapp()"
+            />
+          </span>
+        </label>
+
+        <label>
+          CEP
+          <input
+            type="text"
+            formControlName="cep"
+            inputmode="numeric"
+            maxlength="9"
+            placeholder="70000000"
+            (blur)="buscarCep()"
+          />
+        </label>
+
+        <label class="form-grid__wide">
+          Rua
+          <input type="text" formControlName="rua" placeholder="Rua Exemplo" />
+        </label>
+
+        <label>
+          Numero
+          <input type="text" formControlName="numero" placeholder="123" />
+        </label>
+
+        <label>
+          Bairro
+          <input type="text" formControlName="bairro" placeholder="Centro" />
+        </label>
+
+        <label>
+          Cidade
+          <input type="text" formControlName="cidade" placeholder="Brasilia" />
+        </label>
+
+        <label>
+          Estado
+          <input type="text" formControlName="estado" maxlength="2" placeholder="DF" />
+        </label>
+      </div>
+    </form>
+
+    @if (cepError) {
+      <div class="form-message form-message--error cep-message">{{ cepError }}</div>
+    }
+
+    @if (cepFeedback) {
+      <div class="form-message form-message--success cep-message">{{ cepFeedback }}</div>
+    }
+
+    <section class="service-section" aria-labelledby="servicos-title">
+      <div class="service-section__header">
+        <div>
+          <h2 id="servicos-title">Servicos oferecidos</h2>
+          <p>{{ servicosSelecionados.size }} selecionado(s)</p>
+        </div>
+
+        <label class="service-search">
+          Buscar servico
+          <input
+            type="search"
+            [(ngModel)]="termoBuscaServico"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="Digite para filtrar"
+          />
+        </label>
+      </div>
+
+      @if (servicosFiltrados.length) {
+        <div class="service-list">
+          @for (servico of servicosFiltrados; track servico.id) {
+            <label class="service-option">
+              <input
+                type="checkbox"
+                [checked]="servicosSelecionados.has(servico.id)"
+                (change)="toggleServico(servico.id, $any($event.target).checked)"
+              />
+              <span>{{ servico.nome }}</span>
+            </label>
+          }
+        </div>
+
+        @if (temMaisServicos) {
+          <p class="service-hint">
+            Mostrando {{ servicosFiltrados.length }} de {{ totalServicosFiltrados }} servicos.
+            Use a busca para encontrar mais rapido.
+          </p>
+        }
+      } @else if (servicos.length) {
+        <p class="muted-text">Nenhum servico encontrado para essa busca.</p>
+      } @else {
+        <p class="muted-text">Nenhum servico ativo encontrado no momento.</p>
+      }
+    </section>
+
+    <section class="suggestion-section" aria-labelledby="sugestao-title">
+      <h2 id="sugestao-title">Nao encontrou seu servico?</h2>
+      <p class="suggestion-help">
+        Envie uma sugestao para avaliacao do admin. Enquanto ela aguarda aprovacao,
+        selecione a opcao Prestador ou outro servico disponivel para concluir seu cadastro.
+      </p>
+      <div [formGroup]="sugestaoForm" class="suggestion-row">
+        <input type="text" formControlName="nome" placeholder="Montador de moveis" />
+        <button type="button" class="secondary-submit" (click)="sugerirServico()">Sugerir</button>
+      </div>
+
+      @if (sugestaoError) {
+        <div class="form-message form-message--error">{{ sugestaoError }}</div>
+      }
+
+      @if (sugestaoFeedback) {
+        <div class="form-message form-message--success">{{ sugestaoFeedback }}</div>
+      }
+    </section>
+
+    @if (error) {
+      <div class="form-message form-message--error">{{ error }}</div>
+    }
+
+    @if (feedback) {
+      <div class="form-message form-message--success">{{ feedback }}</div>
+    }
+
+    <button type="button" class="auth-submit prestador-submit" (click)="finalizarCadastro()">
+      Finalizar cadastro
+    </button>
+  </section>
+</main>

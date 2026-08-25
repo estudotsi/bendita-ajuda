@@ -1,0 +1,117 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.prestador-header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 100;
+  height: 64px;
+  border-bottom: 1px solid var(--border);
+  background: hsla(0, 0%, 100%, 0.95);
+  backdrop-filter: blur(12px);
+}
+
+.prestador-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.prestador-header__logo {
+  color: var(--primary);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.prestador-header__nav,
+.prestador-header__actions {
+  display: flex;
+  align-items: center;
+}
+
+.prestador-header__nav {
+  gap: 2rem;
+}
+
+.prestador-header__nav a,
+.prestador-header__mobile-menu a {
+  color: hsla(220, 20%, 14%, 0.7);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.prestador-header__nav a:hover,
+.prestador-header__mobile-menu a:hover,
+.prestador-header__logout:hover {
+  color: var(--primary);
+}
+
+.prestador-header__logout {
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius);
+  background: var(--primary);
+  box-shadow: var(--shadow-button);
+  color: var(--primary-fg);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.prestador-header__toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.prestador-header__toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--fg);
+}
+
+.prestador-header__mobile-menu {
+  display: none;
+  position: absolute;
+  inset: 64px 0 auto;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+
+.prestador-header__mobile-menu a,
+.prestador-header__mobile-menu button {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+#prestador-menu-toggle {
+  display: none;
+}
+
+#prestador-menu-toggle:checked ~ .prestador-header__mobile-menu {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .prestador-header__nav,
+  .prestador-header__actions {
+    display: none;
+  }
+
+  .prestador-header__toggle {
+    display: flex;
+  }
+}

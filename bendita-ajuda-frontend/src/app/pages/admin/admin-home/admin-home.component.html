@@ -1,0 +1,186 @@
+<main class="admin-page">
+  <section class="admin-hero">
+    <div>
+      <span>Admin</span>
+      <h1>Painel administrativo</h1>
+      <p>Gerencie servicos ativos e aprove sugestoes enviadas pelos prestadores.</p>
+    </div>
+
+    <button type="button" class="primary-action" (click)="abrirCriacao()">Novo servico</button>
+  </section>
+
+  <section class="services-panel">
+    <div class="services-panel__header">
+      <div>
+        <span>Servicos</span>
+        <h2>Gerenciamento de servicos</h2>
+      </div>
+
+      <label class="search-field">
+        Buscar por nome
+        <input
+          type="search"
+          [ngModel]="termoBusca"
+          (ngModelChange)="atualizarTermoBusca($event)"
+          placeholder="Ex.: Mestre de obras"
+        />
+      </label>
+    </div>
+
+    @if (error) {
+      <div class="form-message form-message--error">{{ error }}</div>
+    }
+
+    @if (feedback) {
+      <div class="form-message form-message--success">{{ feedback }}</div>
+    }
+
+    <div class="service-columns">
+      <section class="service-card" aria-labelledby="pendentes-title">
+        <div class="service-card__title">
+          <h3 id="pendentes-title">Pendentes de aprovacao</h3>
+          <span>{{ pendentesFiltrados.length }}</span>
+        </div>
+
+        @if (pendentesFiltrados.length) {
+          <div class="pending-list">
+            @for (servico of pendentesFiltrados; track servico.id) {
+              <article class="pending-item">
+                <div>
+                  <strong>{{ servico.nome }}</strong>
+                  <span>{{ servico.status || 'Aguardando aprovacao' }}</span>
+                </div>
+
+                <div class="pending-actions">
+                  <button type="button" class="action action--approve" (click)="aprovar(servico)">
+                    Aprovar
+                  </button>
+                  <button type="button" class="action" (click)="abrirCorrecao(servico)">
+                    Corrigir e aprovar
+                  </button>
+                  <button type="button" class="action" (click)="abrirSubstituicao(servico)">
+                    Substituir
+                  </button>
+                  <button type="button" class="action action--danger" (click)="excluir(servico)">
+                    Excluir
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <p class="empty-state">Nenhum servico pendente encontrado.</p>
+        }
+      </section>
+
+      <section class="service-card" aria-labelledby="ativos-title">
+        <div class="service-card__title">
+          <div>
+            <h3 id="ativos-title">Servicos ativos</h3>
+            <p class="active-summary">
+              @if (termoBusca) {
+                {{ ativosFiltrados.length }} encontrados de {{ servicosAtivos.length }} cadastrados
+              } @else {
+                {{ servicosAtivos.length }} cadastrados na plataforma
+              }
+            </p>
+          </div>
+          <span>{{ ativosFiltrados.length }}</span>
+        </div>
+
+        @if (ativosVisiveis.length) {
+          <div class="active-list">
+            @for (servico of ativosVisiveis; track servico.id) {
+              <div class="active-item">
+                <span>{{ servico.nome.slice(0, 1) }}</span>
+                <strong>{{ servico.nome }}</strong>
+              </div>
+            }
+          </div>
+
+          @if (deveMostrarControleAtivos) {
+            <button type="button" class="active-toggle" (click)="alternarAtivos()">
+              @if (mostrandoTodosAtivos) {
+                Mostrar menos
+              } @else {
+                Ver todos os {{ servicosAtivos.length }} servicos
+              }
+            </button>
+          } @else if (totalAtivosOcultos) {
+            <p class="active-hint">Mais {{ totalAtivosOcultos }} servicos ocultos pela visualizacao.</p>
+          }
+        } @else {
+          <p class="empty-state">Nenhum servico ativo encontrado.</p>
+        }
+      </section>
+    </div>
+  </section>
+</main>
+
+@if (servicoEmCorrecao) {
+  <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="corrigir-title">
+    <section class="modal-card">
+      <h2 id="corrigir-title">Corrigir e aprovar</h2>
+      <p>Ajuste o nome antes de aprovar o servico pendente.</p>
+
+      <form [formGroup]="corrigirForm" class="auth-form" (ngSubmit)="corrigirAprovar()">
+        <label>
+          Nome do servico
+          <input type="text" formControlName="nome" />
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-action" (click)="fecharModais()">Cancelar</button>
+          <button type="submit" class="primary-action">Salvar e aprovar</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
+
+@if (servicoEmSubstituicao) {
+  <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="substituir-title">
+    <section class="modal-card">
+      <h2 id="substituir-title">Substituir por existente</h2>
+      <p>Selecione o servico ativo correto para vincular aos prestadores.</p>
+
+      <form [formGroup]="substituirForm" class="auth-form" (ngSubmit)="substituir()">
+        <label>
+          Servico correto
+          <select formControlName="servicoCorretoId">
+            <option [ngValue]="0">Selecione um servico</option>
+            @for (servico of servicosAtivos; track servico.id) {
+              <option [ngValue]="servico.id">{{ servico.nome }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-action" (click)="fecharModais()">Cancelar</button>
+          <button type="submit" class="primary-action">Substituir</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
+
+@if (criandoServico) {
+  <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="novo-title">
+    <section class="modal-card">
+      <h2 id="novo-title">Novo servico</h2>
+      <p>Crie manualmente um servico ativo para a plataforma.</p>
+
+      <form [formGroup]="criarForm" class="auth-form" (ngSubmit)="criarServico()">
+        <label>
+          Nome do servico
+          <input type="text" formControlName="nome" placeholder="Mestre de obras" />
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-action" (click)="fecharModais()">Cancelar</button>
+          <button type="submit" class="primary-action">Criar servico</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
