@@ -3,6 +3,7 @@ using bendita_ajuda_backend.Application.Services;
 using bendita_ajuda_backend.Domain;
 using bendita_ajuda_backend.Domain.Entidades;
 using bendita_ajuda_backend.Infra.Data;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -147,6 +148,108 @@ public class AuthController : ControllerBase
         {
             return StatusCode(500, $"Erro ao fazer login: {ex.Message}");
         }
+    }
+
+    [HttpPost("google-login")]
+    public async Task<IActionResult> LoginWithGoogle(GoogleLoginRequest request)
+    {
+        var clientId = _configuration["Google:ClientId"];
+
+        if (string.IsNullOrWhiteSpace(clientId))
+            return StatusCode(503, "O login com Google não está configurado.");
+
+        GoogleJsonWebSignature.Payload payload;
+
+        try
+        {
+            payload = await GoogleJsonWebSignature.ValidateAsync(
+                request.IdToken,
+                new GoogleJsonWebSignature.ValidationSettings
+                {
+                    Audience = new[] { clientId }
+                });
+        }
+        catch (InvalidJwtException)
+        {
+            return Unauthorized("Credencial do Google inválida ou expirada.");
+        }
+
+        if (payload.EmailVerified != true ||
+            string.IsNullOrWhiteSpace(payload.Email) ||
+            string.IsNullOrWhiteSpace(payload.Subject))
+        {
+            return Unauthorized("A conta Google precisa ter um e-mail verificado.");
+        }
+
+        var user = await _userManager.FindByLoginAsync("Google", payload.Subject);
+
+        if (user is null)
+        {
+            user = await _userManager.FindByEmailAsync(payload.Email);
+
+            if (user is not null)
+            {
+                if (!user.Ativo)
+                    return Unauthorized("Usuário inativo.");
+
+                if (!user.EmailConfirmed)
+                    return Conflict("Confirme seu e-mail antes de entrar com Google.");
+
+                var vinculoResult = await _userManager.AddLoginAsync(
+                    user,
+                    new UserLoginInfo("Google", payload.Subject, "Google"));
+
+                if (!vinculoResult.Succeeded)
+                    return Conflict("Não foi possível vincular esta conta Google.");
+            }
+            else
+            {
+                user = new ApplicationUser
+                {
+                    Nome = string.IsNullOrWhiteSpace(payload.Name) ? payload.Email : payload.Name,
+                    UserName = payload.Email,
+                    Email = payload.Email,
+                    EmailConfirmed = true,
+                    Ativo = true,
+                    CriadoEm = DateTime.UtcNow
+                };
+
+                var createResult = await _userManager.CreateAsync(user);
+
+                if (!createResult.Succeeded)
+                    return BadRequest(createResult.Errors);
+
+                var roleResult = await _userManager.AddToRoleAsync(user, "Cliente");
+
+                if (!roleResult.Succeeded)
+                {
+                    await _userManager.DeleteAsync(user);
+                    return StatusCode(500, "Não foi possível configurar a conta Google.");
+                }
+
+                var loginResult = await _userManager.AddLoginAsync(
+                    user,
+                    new UserLoginInfo("Google", payload.Subject, "Google"));
+
+                if (!loginResult.Succeeded)
+                {
+                    await _userManager.DeleteAsync(user);
+                    return Conflict("Não foi possível vincular esta conta Google.");
+                }
+            }
+        }
+
+        if (!user.Ativo)
+            return Unauthorized("Usuário inativo.");
+
+        var token = await _tokenService.GerarToken(user);
+        var expiresInDays = _configuration.GetValue<int>("Jwt:ExpiresInDays");
+
+        return Ok(new LoginResponse
+        {
+            AccessToken = token,
+            ExpiresAt = DateTime.UtcNow.AddDays(expiresInDays)
+        });
     }
 
     [HttpGet("confirm-email")]
