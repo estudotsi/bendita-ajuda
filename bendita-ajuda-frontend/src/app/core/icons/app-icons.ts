@@ -1,0 +1,60 @@
+import {
+  LucideAirVent,
+  LucideArrowLeft,
+  LucideBrickWall,
+  LucideCheck,
+  LucideChevronRight,
+  LucideDroplets,
+  LucideHammer,
+  LucideHandHelping,
+  LucideLayoutGrid,
+  LucideLogIn,
+  LucideLogOut,
+  LucideMapPin,
+  LucideMessageCircle,
+  LucideMic,
+  LucideMicOff,
+  LucidePaintRoller,
+  LucideSearch,
+  LucideSearchX,
+  LucideSparkles,
+  LucideSprout,
+  LucideStar,
+  LucideStarHalf,
+  LucideX,
+  LucideZap,
+  provideLucideIcons,
+} from '@lucide/angular';
+
+/**
+ * Ícones registrados por nome para uso com `<svg lucideIcon="nome">`.
+ * Ao usar um ícone novo, adicione-o aqui.
+ */
+export function provideAppIcons() {
+  return provideLucideIcons(
+    LucideAirVent,
+    LucideArrowLeft,
+    LucideBrickWall,
+    LucideCheck,
+    LucideChevronRight,
+    LucideDroplets,
+    LucideHammer,
+    LucideHandHelping,
+    LucideLayoutGrid,
+    LucideLogIn,
+    LucideLogOut,
+    LucideMapPin,
+    LucideMessageCircle,
+    LucideMic,
+    LucideMicOff,
+    LucidePaintRoller,
+    LucideSearch,
+    LucideSearchX,
+    LucideSparkles,
+    LucideSprout,
+    LucideStar,
+    LucideStarHalf,
+    LucideX,
+    LucideZap,
+  );
+}

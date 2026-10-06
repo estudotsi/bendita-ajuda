@@ -1,0 +1,23 @@
+@let p = provider();
+<article class="card">
+  <a class="card__main" [routerLink]="['/prestador', p.id]">
+    <app-avatar [name]="p.name" [photoUrl]="p.photoUrl" [size]="76" />
+
+    <div class="card__info">
+      <h3 class="card__name">{{ p.name }}</h3>
+      <p class="card__line card__job">
+        <svg [lucideIcon]="look().icon" [size]="20" [style.color]="look().color" />
+        {{ p.category.name }}
+      </p>
+      <p class="card__line">
+        <svg lucideIcon="map-pin" [size]="20" />
+        {{ p.neighborhood }}
+      </p>
+      <app-star-rating [rating]="p.rating" [reviewCount]="p.reviewCount" />
+    </div>
+
+    <svg lucideIcon="chevron-right" class="card__chevron" [size]="26" />
+  </a>
+
+  <app-whatsapp-button [provider]="p" />
+</article>

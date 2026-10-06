@@ -1,0 +1,13 @@
+<main id="conteudo" class="container page">
+  <a routerLink="/" class="btn btn--link back">
+    <svg lucideIcon="arrow-left" [size]="22" />
+    Voltar
+  </a>
+
+  <section class="card">
+    <span class="card__icon"><svg [lucideIcon]="icon()" [size]="40" /></span>
+    <h1>{{ heading() }}</h1>
+    <p class="card__text">{{ description() }}</p>
+    <ng-content />
+  </section>
+</main>

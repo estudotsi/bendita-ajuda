@@ -1,0 +1,28 @@
+<main id="conteudo" class="container page">
+  <a routerLink="/" class="btn btn--link back">
+    <svg lucideIcon="arrow-left" [size]="22" />
+    Voltar
+  </a>
+
+  @if (provider.isLoading()) {
+    <p class="card" aria-live="polite">Carregando...</p>
+  } @else if (provider.value(); as p) {
+    <section class="card">
+      <app-avatar [name]="p.name" [photoUrl]="p.photoUrl" [size]="120" />
+      <h1>{{ p.name }}</h1>
+      <p class="card__job">{{ p.category.name }}</p>
+      <p class="card__place">
+        <svg lucideIcon="map-pin" [size]="20" />
+        {{ p.neighborhood }}
+      </p>
+      <app-star-rating [rating]="p.rating" [reviewCount]="p.reviewCount" />
+      <app-whatsapp-button class="card__cta" [provider]="p" />
+      <p class="card__soon">Em breve: fotos de trabalhos, horários e o que os clientes disseram.</p>
+    </section>
+  } @else {
+    <section class="card">
+      <h1>Não encontramos este profissional.</h1>
+      <a routerLink="/" class="btn btn--primary">Ver todos</a>
+    </section>
+  }
+</main>

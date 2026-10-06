@@ -1,0 +1,42 @@
+<div class="loc">
+  <p class="loc__chip">
+    <svg lucideIcon="map-pin" [size]="22" />
+    <span>Perto de você — <strong>{{ location().neighborhood }}</strong></span>
+  </p>
+  <button
+    type="button"
+    class="btn btn--link"
+    [attr.aria-label]="isChoosing() ? 'Fechar a lista de bairros' : 'Trocar o bairro'"
+    aria-controls="lista-bairros"
+    [attr.aria-expanded]="isChoosing()"
+    (click)="isChoosing.set(!isChoosing())"
+  >
+    {{ isChoosing() ? 'fechar' : 'trocar' }}
+  </button>
+</div>
+
+@if (isChoosing()) {
+  <div id="lista-bairros" class="panel">
+    <p class="panel__title">Escolha o seu bairro:</p>
+    @if (neighborhoods.isLoading()) {
+      <p>Carregando os bairros...</p>
+    } @else {
+      <ul class="panel__list">
+        @for (name of neighborhoods.value() ?? []; track name) {
+          @let isCurrent = name === location().neighborhood;
+          <li>
+            <button
+              type="button"
+              class="panel__option"
+              [class.panel__option--current]="isCurrent"
+              [attr.aria-pressed]="isCurrent"
+              (click)="choose(name)"
+            >
+              {{ name }}
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+}

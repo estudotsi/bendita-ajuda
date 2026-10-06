@@ -1,0 +1,46 @@
+<form class="search" role="search" (submit)="onSubmit($event)">
+  <div class="search__field">
+    <label for="busca" class="sr-only">Escreva o que você precisa</label>
+    <svg lucideIcon="search" class="search__icon" [size]="24" />
+    <input
+      #field
+      id="busca"
+      class="search__input"
+      type="search"
+      placeholder="Ou escreva o que precisa..."
+      autocomplete="off"
+      enterkeyhint="search"
+      [value]="text()"
+      (input)="onInput($event)"
+    />
+    @if (text()) {
+      <button type="button" class="search__clear" aria-label="Apagar o que foi escrito" (click)="clear(field)">
+        <svg lucideIcon="x" [size]="24" />
+      </button>
+    }
+  </div>
+
+  @if (speech.isSupported) {
+    @let listening = speech.isListening();
+    <button
+      type="button"
+      class="search__mic"
+      [class.search__mic--on]="listening"
+      [attr.aria-pressed]="listening"
+      [attr.aria-label]="listening ? 'Parar de ouvir' : 'Falar o que você precisa'"
+      (click)="toggleMic()"
+    >
+      <svg [lucideIcon]="listening ? 'mic-off' : 'mic'" [size]="28" />
+      <span>{{ listening ? 'Parar' : 'Falar' }}</span>
+    </button>
+  }
+</form>
+
+<p class="status" [class.status--listening]="speech.isListening()" aria-live="polite">
+  @if (statusMessage()) {
+    @if (speech.isListening()) {
+      <span class="status__dot" aria-hidden="true"></span>
+    }
+    {{ statusMessage() }}
+  }
+</p>

@@ -1,0 +1,14 @@
+<app-placeholder-page
+  heading="Entrar"
+  icon="log-in"
+  description="Em breve você vai poder entrar usando o número do seu celular."
+>
+  @if (hasReturn()) {
+    <p class="note">Depois de entrar, você volta para o profissional que escolheu.</p>
+  }
+  <button type="button" class="btn btn--primary btn--block" aria-label="Entrar para testar" (click)="enterForTesting()">
+    <svg lucideIcon="log-in" [size]="22" />
+    Entrar para testar
+  </button>
+  <p class="note">Entrada de teste: ainda não existe cadastro de verdade.</p>
+</app-placeholder-page>

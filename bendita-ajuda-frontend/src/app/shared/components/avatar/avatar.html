@@ -1,0 +1,13 @@
+@if (photoUrl() && !photoFailed()) {
+  <img
+    class="avatar__img"
+    [src]="photoUrl()"
+    alt=""
+    loading="lazy"
+    [width]="size()"
+    [height]="size()"
+    (error)="photoFailed.set(true)"
+  />
+} @else {
+  <span class="avatar__initials" [style.background]="color()" aria-hidden="true">{{ initials() }}</span>
+}

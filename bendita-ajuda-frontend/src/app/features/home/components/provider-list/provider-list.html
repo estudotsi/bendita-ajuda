@@ -1,0 +1,40 @@
+<div class="head">
+  <h2 id="titulo-lista" class="head__title">{{ heading() }}</h2>
+  @if (canShowAll()) {
+    <button type="button" class="btn btn--outline" aria-label="Ver todos os profissionais" (click)="showAll.emit()">
+      <svg lucideIcon="layout-grid" [size]="20" />
+      Ver todos
+    </button>
+  }
+</div>
+
+<p class="sr-only" aria-live="polite">{{ announcement() }}</p>
+
+@if (loading()) {
+  <ul class="list" aria-hidden="true">
+    @for (i of skeletons; track i) {
+      <li><app-provider-card-skeleton /></li>
+    }
+  </ul>
+} @else if (failed()) {
+  <div class="message" role="alert">
+    <p class="message__title">Não conseguimos carregar a lista agora.</p>
+    <p>Verifique sua internet e tente de novo em instantes.</p>
+  </div>
+} @else if (providers().length === 0) {
+  <div class="message">
+    <span class="message__icon"><svg lucideIcon="search-x" [size]="40" /></span>
+    <p class="message__title">Não achamos ninguém para isso ainda.</p>
+    <p>Tente outra palavra ou escolha uma categoria.</p>
+    <button type="button" class="btn btn--primary" aria-label="Ver todos os profissionais" (click)="showAll.emit()">
+      <svg lucideIcon="layout-grid" [size]="22" />
+      Ver todos
+    </button>
+  </div>
+} @else {
+  <ul class="list">
+    @for (provider of providers(); track provider.id) {
+      <li><app-provider-card [provider]="provider" /></li>
+    }
+  </ul>
+}

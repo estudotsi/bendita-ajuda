@@ -1,0 +1,17 @@
+<span class="sr-only">{{ screenReaderText() }}</span>
+<span class="rating" aria-hidden="true">
+  <span class="rating__stars">
+    @for (star of stars(); track $index) {
+      <span class="star">
+        <svg lucideIcon="star" [size]="20" />
+        @if (star === 'full') {
+          <span class="star__fill"><svg lucideIcon="star" [size]="20" /></span>
+        } @else if (star === 'half') {
+          <span class="star__fill"><svg lucideIcon="star-half" [size]="20" /></span>
+        }
+      </span>
+    }
+  </span>
+  <strong class="rating__value">{{ ratingText() }}</strong>
+  <span class="rating__count">({{ reviewsText() }})</span>
+</span>

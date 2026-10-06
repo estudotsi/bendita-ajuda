@@ -1,0 +1,149 @@
+.search {
+  display: flex;
+  gap: var(--space-3);
+
+  /* Celular: o campo usa a largura toda e o "Falar" fica logo abaixo. */
+  @media (max-width: 479px) {
+    flex-direction: column;
+
+    .search__input {
+      padding-left: 48px;
+      font-size: var(--font-size-base);
+    }
+
+    .search__mic {
+      flex-direction: row;
+      gap: var(--space-2);
+      width: 100%;
+      height: 56px;
+    }
+  }
+}
+
+.search__field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.search__icon {
+  position: absolute;
+  top: 50%;
+  left: var(--space-4);
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.search__input {
+  width: 100%;
+  height: 68px;
+  padding: 0 var(--touch-min) 0 52px;
+  border: 2px solid var(--color-text-muted);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: var(--font-size-lg);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition), box-shadow var(--transition);
+
+  &::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+
+  &::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgb(15 92 110 / 0.25);
+  }
+}
+
+.search__clear {
+  position: absolute;
+  top: 50%;
+  right: var(--space-1);
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-muted);
+
+  &:hover {
+    background: var(--color-primary-soft);
+  }
+}
+
+.search__mic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+  width: 76px;
+  height: 68px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: var(--font-size-base);
+  font-weight: 800;
+  line-height: 1.2;
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition), transform var(--transition);
+
+  &:hover {
+    background: var(--color-primary-dark);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.search__mic--on {
+  background: var(--color-danger);
+  animation: pulse 1.4s ease-in-out infinite;
+
+  &:hover {
+    background: #8a1616;
+  }
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 1.5em;
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.status--listening {
+  color: var(--color-danger);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+}
+
+.status__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 0 8px rgb(166 27 27 / 0.15);
+  }
+}

@@ -1,0 +1,39 @@
+:host {
+  display: block;
+}
+
+.rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--space-2);
+  row-gap: var(--space-1);
+}
+
+.rating__stars {
+  display: inline-flex;
+  gap: 2px;
+  color: var(--color-star);
+}
+
+.star {
+  position: relative;
+  display: inline-block;
+}
+
+.star__fill {
+  position: absolute;
+  inset: 0;
+
+  svg {
+    fill: currentColor;
+  }
+}
+
+.rating__value {
+  font-weight: 800;
+}
+
+.rating__count {
+  color: var(--color-text-muted);
+}

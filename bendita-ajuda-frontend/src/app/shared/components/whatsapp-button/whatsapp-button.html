@@ -1,0 +1,9 @@
+<button
+  type="button"
+  class="whatsapp"
+  [attr.aria-label]="'Chamar no WhatsApp: ' + provider().name"
+  (click)="call()"
+>
+  <svg lucideIcon="message-circle" [size]="26" [strokeWidth]="2.25" />
+  <span>Chamar no WhatsApp</span>
+</button>

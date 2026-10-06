@@ -1,0 +1,30 @@
+@if (loading()) {
+  <ul class="grid" aria-hidden="true">
+    @for (i of skeletons; track i) {
+      <li><div class="tile tile--skeleton"></div></li>
+    }
+  </ul>
+} @else {
+  <ul class="grid">
+    @for (tile of tiles(); track tile.category.id) {
+      @let isSelected = tile.category.id === selectedId();
+      <li>
+        <button
+          type="button"
+          class="tile"
+          [class.tile--selected]="isSelected"
+          [attr.aria-pressed]="isSelected"
+          (click)="selected.emit(tile.category.id)"
+        >
+          <span class="tile__icon" [style.background]="tile.look.background" [style.color]="tile.look.color">
+            <svg [lucideIcon]="tile.look.icon" [size]="34" />
+          </span>
+          <span class="tile__name">{{ tile.category.name }}</span>
+          @if (isSelected) {
+            <span class="tile__check"><svg lucideIcon="check" [size]="18" [strokeWidth]="3" /></span>
+          }
+        </button>
+      </li>
+    }
+  </ul>
+}

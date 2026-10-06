@@ -1,0 +1,50 @@
+# Fluxo "Entrar com celular".
+# Use o perfil HTTPS (o cookie de sessão é Secure e não volta em requisições HTTP).
+# O código de 6 números aparece no console da API, numa linha de aviso:
+#   warn: ...EnvioCodigoConsole[0]
+#         [DEV] Código de verificação para 61999998888: 123456
+# Copie esse número para a variável @codigo abaixo antes dos passos 2 e 3.
+
+@host = https://localhost:7238
+@celular = (61) 99999-8888
+@codigo = 000000
+
+### 1. Pedir o código (espera 204 No Content)
+POST {{host}}/api/auth/celular/enviar-codigo
+Content-Type: application/json
+
+{
+  "celular": "{{celular}}"
+}
+
+### 2. Confirmar SEM nome — número novo (espera 200 { "precisaNome": true })
+POST {{host}}/api/auth/celular/confirmar
+Content-Type: application/json
+
+{
+  "celular": "{{celular}}",
+  "codigo": "{{codigo}}"
+}
+
+### 3. Confirmar COM nome (espera 200 com o usuário + cookie bendita_sessao)
+POST {{host}}/api/auth/celular/confirmar
+Content-Type: application/json
+
+{
+  "celular": "{{celular}}",
+  "codigo": "{{codigo}}",
+  "nome": "Maria das Dores"
+}
+
+### 4. Quem sou eu (espera 200 com o usuário)
+GET {{host}}/api/auth/eu
+Accept: application/json
+
+### 5. Sair (espera 204 No Content)
+POST {{host}}/api/auth/sair
+
+### 6. Quem sou eu, depois de sair (espera 401)
+GET {{host}}/api/auth/eu
+Accept: application/json
+
+###

@@ -1,0 +1,47 @@
+<main id="conteudo" class="home">
+  <section class="container hero" aria-labelledby="titulo-pagina">
+    <h1 id="titulo-pagina" class="hero__title">Do que você precisa?</h1>
+    <app-location-chip />
+  </section>
+
+  <section class="container section" aria-labelledby="titulo-categorias">
+    <div class="section__head">
+      <h2 id="titulo-categorias" class="section__title">Escolha o serviço</h2>
+      @if (selectedCategoryId()) {
+        <button type="button" class="btn btn--link" aria-label="Ver todos os serviços" (click)="showAll()">
+          Ver todos
+        </button>
+      }
+    </div>
+    <app-category-grid
+      [categories]="categories.value() ?? []"
+      [loading]="categories.isLoading()"
+      [selectedId]="selectedCategoryId()"
+      (selected)="selectCategory($event)"
+    />
+  </section>
+
+  <section class="container section section--search" aria-label="Buscar por palavra">
+    <app-search-bar
+      [value]="searchDraft()"
+      (valueChange)="onSearchChange($event)"
+      (submitted)="scrollToResults()"
+    />
+  </section>
+
+  <section #results class="container section results" aria-labelledby="titulo-lista">
+    <app-provider-list
+      [heading]="listHeading()"
+      [providers]="providers.value() ?? []"
+      [loading]="providers.isLoading()"
+      [failed]="!!providers.error()"
+      [canShowAll]="isFiltered()"
+      (showAll)="showAll()"
+    />
+  </section>
+</main>
+
+<footer class="container footer">
+  <app-become-provider-banner />
+  <p class="footer__copy">Bendita Ajuda — gente boa perto de você.</p>
+</footer>

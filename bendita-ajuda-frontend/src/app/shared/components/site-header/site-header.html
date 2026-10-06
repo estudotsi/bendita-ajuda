@@ -1,0 +1,20 @@
+<header class="header">
+  <div class="container header__inner">
+    <a routerLink="/" class="brand" aria-label="Bendita Ajuda, voltar para o início">
+      <span class="brand__icon"><svg lucideIcon="hand-helping" [size]="26" /></span>
+      <span class="brand__name">Bendita Ajuda</span>
+    </a>
+
+    @if (auth.isLoggedIn()) {
+      <button type="button" class="btn btn--outline" aria-label="Sair da sua conta" (click)="auth.logout()">
+        <svg lucideIcon="log-out" [size]="22" />
+        Sair
+      </button>
+    } @else {
+      <a routerLink="/entrar" class="btn btn--outline" aria-label="Entrar na sua conta">
+        <svg lucideIcon="log-in" [size]="22" />
+        Entrar
+      </a>
+    }
+  </div>
+</header>
