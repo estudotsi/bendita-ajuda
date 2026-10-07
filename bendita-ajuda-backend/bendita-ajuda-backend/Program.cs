@@ -8,6 +8,7 @@ using bendita_ajuda_backend.Services.Cep;
 using bendita_ajuda_backend.Services.EnvioCodigo;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
@@ -27,9 +28,18 @@ builder.Services.AddControllers()
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-// Banco de dados (MySQL)
-var connectionString = builder.Configuration.GetConnectionString("Default")
+// Banco de dados (MySQL). No servidor a conexão vem de "ConnectionStrings:DefaultConnection" (nome herdado do deploy antigo).
+var connectionString = new[]
+    {
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        builder.Configuration.GetConnectionString("Default"),
+    }
+    .FirstOrDefault(c => !string.IsNullOrWhiteSpace(c))
     ?? throw new InvalidOperationException("Configure a string de conexão \"ConnectionStrings:Default\".");
+
+// Atrás do nginx: usa o IP real do cliente (rate limit) e o esquema https original.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
 builder.Services.AddDbContext<AppDbContext>(options => options.UseMySQL(connectionString));
 
 // Chaves que protegem o cookie ficam no banco: a sessão sobrevive a reinícios da API.
@@ -118,6 +128,8 @@ else
 }
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
