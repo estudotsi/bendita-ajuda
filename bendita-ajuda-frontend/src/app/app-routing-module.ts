@@ -22,6 +22,10 @@ const routes: Routes = [
     loadChildren: () =>
       import('./features/become-provider/become-provider-module').then((m) => m.BecomeProviderModule),
   },
+  {
+    path: 'admin',
+    loadChildren: () => import('./features/admin/admin-module').then((m) => m.AdminModule),
+  },
   { path: '**', redirectTo: '' },
 ];
 

@@ -1,8 +1,10 @@
 using System.Threading.RateLimiting;
 using bendita_ajuda_backend.Controllers;
 using bendita_ajuda_backend.Data;
+using bendita_ajuda_backend.Data.Consultas;
 using bendita_ajuda_backend.Dtos;
 using bendita_ajuda_backend.Services;
+using bendita_ajuda_backend.Services.Cep;
 using bendita_ajuda_backend.Services.EnvioCodigo;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
@@ -84,8 +86,36 @@ builder.Services.AddOptions<AuthOptions>()
     .ValidateOnStart();
 
 builder.Services.AddScoped<AuthService>();
-// TODO: trocar pelo envio via WhatsApp. O EnvioCodigoConsole só escreve o código no log.
-builder.Services.AddScoped<IEnvioCodigo, EnvioCodigoConsole>();
+builder.Services.AddScoped<PrestadorService>();
+builder.Services.AddScoped<SugestaoService>();
+
+// Leituras com Dapper
+builder.Services.AddScoped<ServicoConsultas>();
+builder.Services.AddScoped<PrestadorConsultas>();
+builder.Services.AddScoped<SugestaoConsultas>();
+
+// CEP → bairro, cidade e UF (ViaCEP, gratuito)
+builder.Services.AddHttpClient<IConsultaCep, ConsultaCepViaCep>(http =>
+{
+    http.BaseAddress = new Uri("https://viacep.com.br/");
+    http.Timeout = TimeSpan.FromSeconds(10);
+});
+
+// Código de verificação por SMS (TrackMax). Sem "Sms:Token" configurado, só escreve o código no log.
+var sms = builder.Configuration.GetSection(SmsOptions.Secao).Get<SmsOptions>() ?? new SmsOptions();
+if (string.IsNullOrWhiteSpace(sms.Token))
+{
+    builder.Services.AddScoped<IEnvioCodigo, EnvioCodigoConsole>();
+}
+else
+{
+    builder.Services.AddHttpClient<IEnvioCodigo, EnvioCodigoSms>(http =>
+    {
+        http.BaseAddress = new Uri(sms.UrlBase);
+        http.Timeout = TimeSpan.FromSeconds(15);
+        http.DefaultRequestHeaders.Authorization = new("Bearer", sms.Token);
+    });
+}
 
 var app = builder.Build();
 

@@ -6,9 +6,9 @@ namespace bendita_ajuda_backend.Services.EnvioCodigo;
 /// </summary>
 public class EnvioCodigoConsole(ILogger<EnvioCodigoConsole> logger) : IEnvioCodigo
 {
-    public Task EnviarAsync(string celular, string codigo, CancellationToken cancellationToken)
+    public Task<bool> EnviarAsync(string celular, string codigo, CancellationToken cancellationToken)
     {
         logger.LogWarning("[DEV] Código de verificação para {Celular}: {Codigo}", celular, codigo);
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 }

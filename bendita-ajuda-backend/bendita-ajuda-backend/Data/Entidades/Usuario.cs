@@ -18,4 +18,7 @@ public class Usuario
     public Papel Papel { get; set; } = Papel.Cliente;
 
     public DateTime CriadoEm { get; set; }
+
+    /// <summary>Preenchido só se a pessoa também oferece serviços.</summary>
+    public Prestador? Prestador { get; set; }
 }

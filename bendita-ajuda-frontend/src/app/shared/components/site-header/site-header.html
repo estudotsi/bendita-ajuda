@@ -6,11 +6,26 @@
     </a>
 
     @if (auth.isLoggedIn()) {
-      <button type="button" class="btn btn--outline" aria-label="Sair da sua conta" (click)="auth.logout()">
-        <svg lucideIcon="log-out" [size]="22" />
-        Sair
-      </button>
-    } @else {
+      <div class="account">
+        <div class="account__who">
+          <span class="account__hello">Olá, {{ firstName() }}</span>
+          @if (auth.isAdmin()) {
+            <a routerLink="/admin" class="badge badge--admin" aria-label="Admin: ver serviços sugeridos">
+              <svg lucideIcon="shield-check" [size]="16" /> Admin
+            </a>
+          }
+          @if (auth.user()?.ehPrestador) {
+            <a routerLink="/seja-prestador" class="badge" aria-label="Prestador: ver meu cadastro">
+              <svg lucideIcon="hand-helping" [size]="16" /> Prestador
+            </a>
+          }
+        </div>
+        <button type="button" class="btn btn--outline" aria-label="Sair da sua conta" (click)="auth.logout()">
+          <svg lucideIcon="log-out" [size]="22" />
+          Sair
+        </button>
+      </div>
+    } @else if (auth.isChecked()) {
       <a routerLink="/entrar" class="btn btn--outline" aria-label="Entrar na sua conta">
         <svg lucideIcon="log-in" [size]="22" />
         Entrar

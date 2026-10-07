@@ -1,14 +1,114 @@
-<app-placeholder-page
-  heading="Entrar"
-  icon="log-in"
-  description="Em breve você vai poder entrar usando o número do seu celular."
->
-  @if (hasReturn()) {
-    <p class="note">Depois de entrar, você volta para o profissional que escolheu.</p>
-  }
-  <button type="button" class="btn btn--primary btn--block" aria-label="Entrar para testar" (click)="enterForTesting()">
-    <svg lucideIcon="log-in" [size]="22" />
-    Entrar para testar
-  </button>
-  <p class="note">Entrada de teste: ainda não existe cadastro de verdade.</p>
-</app-placeholder-page>
+<main id="conteudo" class="container page-shell">
+  <a routerLink="/" class="btn btn--link page-back">
+    <svg lucideIcon="arrow-left" [size]="22" />
+    Voltar
+  </a>
+
+  <section class="panel">
+    @switch (step()) {
+      @case ('phone') {
+        <span class="panel__icon"><svg lucideIcon="smartphone" [size]="40" /></span>
+        <h1>Entrar</h1>
+        <p class="panel__text">Digite seu celular. Vamos mandar um código por SMS.</p>
+      }
+      @case ('code') {
+        <span class="panel__icon"><svg lucideIcon="message-square-text" [size]="40" /></span>
+        <h1>Digite o código</h1>
+        <p class="panel__text">
+          Mandamos um SMS com 6 números para <strong>{{ phone() }}</strong>.
+        </p>
+      }
+      @case ('name') {
+        <span class="panel__icon"><svg lucideIcon="user-round" [size]="40" /></span>
+        <h1>Como você se chama?</h1>
+        <p class="panel__text">É a primeira vez que você entra. Só falta o seu nome.</p>
+      }
+    }
+
+    <form class="form-stack" novalidate (submit)="submit($event)">
+      @switch (step()) {
+        @case ('phone') {
+          <label for="celular" class="field-label">Seu celular com DDD</label>
+          <input
+            #field
+            id="celular"
+            class="field-input"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel-national"
+            placeholder="(61) 99999-8888"
+            [value]="phone()"
+            [attr.aria-invalid]="!!error()"
+            aria-describedby="erro"
+            (input)="onPhoneInput($event)"
+          />
+        }
+        @case ('code') {
+          <label for="codigo" class="field-label">Código do SMS</label>
+          <input
+            #field
+            id="codigo"
+            class="field-input code-input"
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="6"
+            placeholder="000000"
+            [value]="code()"
+            [attr.aria-invalid]="!!error()"
+            aria-describedby="erro"
+            (input)="onCodeInput($event)"
+          />
+        }
+        @case ('name') {
+          <label for="nome" class="field-label">Seu nome</label>
+          <input
+            #field
+            id="nome"
+            class="field-input"
+            type="text"
+            autocomplete="name"
+            autocapitalize="words"
+            maxlength="100"
+            [value]="name()"
+            [attr.aria-invalid]="!!error()"
+            aria-describedby="erro"
+            (input)="onNameInput($event)"
+          />
+        }
+      }
+
+      <p id="erro" class="field-error" role="alert">{{ error() }}</p>
+
+      <button type="submit" class="btn btn--primary btn--block" [disabled]="busy()">
+        @if (busy()) {
+          <svg lucideIcon="loader-circle" [size]="22" class="spin" />
+          Aguarde...
+        } @else {
+          @switch (step()) {
+            @case ('phone') { <svg lucideIcon="message-square-text" [size]="22" /> Receber código por SMS }
+            @case ('code') { <svg lucideIcon="check" [size]="22" /> Confirmar }
+            @case ('name') { <svg lucideIcon="log-in" [size]="22" /> Entrar }
+          }
+        }
+      </button>
+    </form>
+
+    @if (step() === 'code') {
+      <div class="panel__actions">
+        <button type="button" class="btn btn--link" [disabled]="busy() || resendIn() > 0" (click)="sendCode()">
+          @if (resendIn() > 0) {
+            Enviar de novo em {{ resendIn() }}s
+          } @else {
+            Enviar de novo
+          }
+        </button>
+        <button type="button" class="btn btn--link" (click)="changePhone()">Trocar número</button>
+      </div>
+    }
+
+    @if (hasReturn()) {
+      <p class="panel__note">Depois de entrar, você volta para onde estava.</p>
+    }
+  </section>
+</main>

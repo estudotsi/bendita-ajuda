@@ -1,0 +1,46 @@
+/* Cartão, campos e botões vêm do styles.scss (.panel, .field-input...). */
+
+.suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-5);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: left;
+
+  h2 {
+    font-size: var(--font-size-lg);
+  }
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+
+  .field-input {
+    flex: 1 1 200px;
+    height: 56px;
+  }
+}
+
+.reject {
+  align-self: flex-start;
+  color: var(--color-danger);
+}
+
+.done {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-primary);
+  font-weight: 800;
+}

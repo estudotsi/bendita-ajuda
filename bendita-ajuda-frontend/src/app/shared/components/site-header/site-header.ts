@@ -1,7 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 
-/** Cabeçalho fixo do app: nome à esquerda, "Entrar" (ou "Sair") à direita. */
+/** Cabeçalho fixo do app: nome à esquerda, "Entrar" (ou "Olá, fulano" + "Sair") à direita. */
 @Component({
   selector: 'app-site-header',
   standalone: false,
@@ -10,4 +10,6 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class SiteHeader {
   protected readonly auth = inject(AuthService);
+
+  protected readonly firstName = computed(() => this.auth.user()?.nome.trim().split(/\s+/)[0] ?? '');
 }

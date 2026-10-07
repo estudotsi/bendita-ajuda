@@ -1,0 +1,189 @@
+<main id="conteudo" class="container page-shell">
+  @if (mode() === 'wizard' && step() > 1) {
+    <button type="button" class="btn btn--link page-back" (click)="back()">
+      <svg lucideIcon="arrow-left" [size]="22" />
+      Voltar
+    </button>
+  } @else {
+    <a routerLink="/" class="btn btn--link page-back">
+      <svg lucideIcon="arrow-left" [size]="22" />
+      Voltar
+    </a>
+  }
+
+  @switch (mode()) {
+    @case ('loading') {
+      <section class="panel" aria-busy="true">
+        <svg lucideIcon="loader-circle" [size]="40" class="spin" />
+        <p class="panel__text">Carregando...</p>
+      </section>
+    }
+
+    @case ('failed') {
+      <section class="panel">
+        <span class="panel__icon"><svg lucideIcon="search-x" [size]="40" /></span>
+        <h1>Não conseguimos carregar</h1>
+        <p class="panel__text">Confira sua internet e tente de novo.</p>
+        <button type="button" class="btn btn--primary btn--block" (click)="retry()">Tentar de novo</button>
+      </section>
+    }
+
+    @case ('wizard') {
+      <form class="panel panel--wide" novalidate (submit)="next($event)">
+        <p class="step-count">Passo {{ step() }} de 3</p>
+
+        @switch (step()) {
+          @case (1) {
+            <h1>O que você faz?</h1>
+            <p class="panel__text">Toque nos serviços que você oferece. Pode escolher mais de um.</p>
+
+            <ul class="tiles">
+              @for (tile of tiles(); track tile.service.id) {
+                <li>
+                  <button
+                    type="button"
+                    class="tile"
+                    [class.tile--selected]="tile.selected"
+                    [attr.aria-pressed]="tile.selected"
+                    (click)="toggleService(tile.service.id)"
+                  >
+                    <span class="tile__icon" [style.background]="tile.look.background" [style.color]="tile.look.color">
+                      <svg [lucideIcon]="tile.look.icon" [size]="28" />
+                    </span>
+                    <span>{{ tile.service.nome }}</span>
+                    @if (tile.selected) {
+                      <span class="tile__check"><svg lucideIcon="check" [size]="16" [strokeWidth]="3" /></span>
+                    }
+                  </button>
+                </li>
+              }
+            </ul>
+
+            @if (showOther()) {
+              <div class="form-stack">
+                <label for="outro-servico" class="field-label">Escreva o que você faz</label>
+                <input
+                  id="outro-servico"
+                  class="field-input"
+                  type="text"
+                  maxlength="100"
+                  placeholder="Ex.: boleira, técnico de informática"
+                  [value]="other()"
+                  (input)="onOtherInput($event)"
+                />
+                <p class="panel__note">Vamos analisar e colocar você no serviço certo.</p>
+              </div>
+            } @else {
+              <button type="button" class="btn btn--link" (click)="openOther()">
+                <svg lucideIcon="plus" [size]="22" />
+                Não achei meu serviço
+              </button>
+            }
+          }
+
+          @case (2) {
+            <h1>Onde você atende?</h1>
+            <p class="panel__text">Digite o CEP. O cliente só vê o bairro, nunca o seu endereço.</p>
+
+            <div class="form-stack">
+              <label for="cep" class="field-label">CEP</label>
+              <input
+                id="cep"
+                class="field-input"
+                type="text"
+                inputmode="numeric"
+                autocomplete="postal-code"
+                placeholder="00000-000"
+                [value]="cep()"
+                [attr.aria-invalid]="!!error()"
+                aria-describedby="erro"
+                (input)="onCepInput($event)"
+              />
+
+              @if (address(); as found) {
+                <p class="found">
+                  <svg lucideIcon="map-pin" [size]="22" />
+                  {{ found.cidade }} - {{ found.uf }}
+                </p>
+                <label for="bairro" class="field-label">Bairro (se tiver)</label>
+                <input
+                  id="bairro"
+                  class="field-input"
+                  type="text"
+                  maxlength="100"
+                  [value]="neighborhood()"
+                  (input)="onNeighborhoodInput($event)"
+                />
+              } @else if (busy()) {
+                <p class="found"><svg lucideIcon="loader-circle" [size]="22" class="spin" /> Procurando o CEP...</p>
+              }
+            </div>
+          }
+
+          @case (3) {
+            <h1>Confira seus dados</h1>
+            <dl class="summary">
+              <dt>Serviços</dt>
+              <dd>
+                {{ selectedNames().join(', ') }}
+                @if (other().trim()) {
+                  <span class="pending-line">{{ other().trim() }} <span class="pending">(vamos analisar)</span></span>
+                }
+              </dd>
+              <dt>Onde você atende</dt>
+              <dd>{{ placeText() }}</dd>
+            </dl>
+          }
+        }
+
+        <p id="erro" class="field-error" role="alert">{{ error() }}</p>
+
+        <button type="submit" class="btn btn--primary btn--block" [disabled]="busy()">
+          @if (busy() && step() === 3) {
+            <svg lucideIcon="loader-circle" [size]="22" class="spin" />
+            Salvando...
+          } @else if (step() === 3) {
+            <svg lucideIcon="check" [size]="22" />
+            Pronto
+          } @else {
+            Continuar
+            <svg lucideIcon="chevron-right" [size]="22" />
+          }
+        </button>
+      </form>
+    }
+
+    @case ('profile') {
+      @if (profile(); as p) {
+        <section class="panel">
+          <span class="panel__icon"><svg [lucideIcon]="justRegistered() ? 'check' : 'hand-helping'" [size]="40" /></span>
+          <h1>{{ justRegistered() ? 'Pronto, você é prestador!' : 'Seu cadastro de prestador' }}</h1>
+
+          @if (p.servicos.length) {
+            <p class="panel__text">Clientes de {{ profilePlace() }} já podem achar você.</p>
+          } @else {
+            <p class="panel__text">Você vai aparecer na busca assim que analisarmos o seu serviço.</p>
+          }
+
+          <dl class="summary">
+            @if (p.servicos.length) {
+              <dt>Serviços</dt>
+              <dd>{{ profileServiceNames() }}</dd>
+            }
+            @if (p.sugestoesPendentes.length) {
+              <dt>Em análise</dt>
+              <dd>
+                <svg lucideIcon="clock" [size]="20" class="inline-icon" />
+                {{ p.sugestoesPendentes.join(', ') }}
+              </dd>
+            }
+            <dt>Onde você atende</dt>
+            <dd>{{ profilePlace() }}</dd>
+          </dl>
+
+          <a routerLink="/" class="btn btn--primary btn--block">Voltar para o início</a>
+        </section>
+      }
+    }
+  }
+</main>

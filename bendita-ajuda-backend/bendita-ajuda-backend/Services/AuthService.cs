@@ -15,6 +15,7 @@ public enum ResultadoEnvioCodigo
     Enviado,
     CelularInvalido,
     LimiteExcedido,
+    FalhaNoEnvio,
 }
 
 public enum StatusConfirmacao
@@ -56,17 +57,25 @@ public class AuthService(
 
         var codigo = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
 
-        db.CodigosVerificacao.Add(new CodigoVerificacao
+        var registro = new CodigoVerificacao
         {
             Id = Guid.NewGuid(),
             Celular = celular,
             CodigoHash = CalcularHash(celular, codigo),
             ExpiraEm = agora + ValidadeCodigo,
             CriadoEm = agora,
-        });
+        };
+        db.CodigosVerificacao.Add(registro);
         await db.SaveChangesAsync(ct);
 
-        await envioCodigo.EnviarAsync(celular, codigo, ct);
+        if (!await envioCodigo.EnviarAsync(celular, codigo, ct))
+        {
+            // O código não chegou: descarta para não contar no limite de envios.
+            db.CodigosVerificacao.Remove(registro);
+            await db.SaveChangesAsync(CancellationToken.None);
+            return ResultadoEnvioCodigo.FalhaNoEnvio;
+        }
+
         return ResultadoEnvioCodigo.Enviado;
     }
 
@@ -99,7 +108,7 @@ public class AuthService(
             return invalido;
         }
 
-        var usuario = await db.Usuarios.FirstOrDefaultAsync(u => u.Celular == celular, ct);
+        var usuario = await db.Usuarios.Include(u => u.Prestador).FirstOrDefaultAsync(u => u.Celular == celular, ct);
         if (usuario is null)
         {
             var nomeLimpo = nome?.Trim();
@@ -138,7 +147,7 @@ public class AuthService(
         if (!Guid.TryParse(id, out var usuarioId))
             return null;
 
-        return await db.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == usuarioId, ct);
+        return await db.Usuarios.AsNoTracking().Include(u => u.Prestador).FirstOrDefaultAsync(u => u.Id == usuarioId, ct);
     }
 
     /// <summary>Monta a identidade gravada no cookie de sessão.</summary>

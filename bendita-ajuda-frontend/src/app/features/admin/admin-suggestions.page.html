@@ -1,0 +1,88 @@
+<main id="conteudo" class="container page-shell">
+  <a routerLink="/" class="btn btn--link page-back">
+    <svg lucideIcon="arrow-left" [size]="22" />
+    Voltar
+  </a>
+
+  <section class="panel panel--wide">
+    <h1>Serviços sugeridos</h1>
+
+    @switch (mode()) {
+      @case ('loading') {
+        <svg lucideIcon="loader-circle" [size]="40" class="spin" />
+      }
+      @case ('forbidden') {
+        <p class="panel__text">Esta página é só para administradores.</p>
+      }
+      @case ('failed') {
+        <p class="panel__text">Não conseguimos carregar as sugestões.</p>
+        <button type="button" class="btn btn--primary" (click)="load()">Tentar de novo</button>
+      }
+      @case ('ready') {
+        <p class="panel__text">
+          Serviços que os prestadores escreveram e não estão na lista. Ao resolver, vale para todos que
+          escreveram o mesmo texto.
+        </p>
+
+        <p class="field-error" role="alert">{{ error() }}</p>
+        @if (done()) {
+          <p class="done" role="status"><svg lucideIcon="check" [size]="22" /> {{ done() }}</p>
+        }
+
+        @for (group of groups(); track group.key) {
+          @let busy = busyKey() === group.key;
+          <article class="suggestion" [attr.aria-busy]="busy">
+            <header>
+              <h2>“{{ group.first.descricao }}”</h2>
+              <p class="panel__note">
+                @if (group.items.length > 1) {
+                  {{ group.items.length }} prestadores:
+                }
+                @for (item of group.items; track item.id; let last = $last) {
+                  {{ item.prestadorNome }} ({{ item.cidade }} - {{ item.uf }}){{ last ? '' : ',' }}
+                }
+              </p>
+            </header>
+
+            <div class="option">
+              <label class="field-label" [for]="'similar-' + group.key">É o mesmo serviço que:</label>
+              <div class="row">
+                <select #similar class="field-input" [id]="'similar-' + group.key">
+                  <option value="">Escolha...</option>
+                  @for (service of services(); track service.id) {
+                    <option [value]="service.id">{{ service.nome }}</option>
+                  }
+                </select>
+                <button type="button" class="btn btn--primary" [disabled]="busy" (click)="markSimilar(group, similar.value)">
+                  <svg lucideIcon="check" [size]="22" /> Juntar
+                </button>
+              </div>
+            </div>
+
+            <div class="option">
+              <span class="field-label">Ou criar um serviço novo:</span>
+              <div class="row">
+                <input #name class="field-input" aria-label="Nome do serviço" [value]="suggestedName(group)" />
+                <input #plural class="field-input" aria-label="Nome no plural" placeholder="Plural (ex.: Boleiras)" />
+                <button
+                  type="button"
+                  class="btn btn--outline"
+                  [disabled]="busy"
+                  (click)="createService(group, name.value, plural.value)"
+                >
+                  <svg lucideIcon="plus" [size]="22" /> Criar
+                </button>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn--link reject" [disabled]="busy" (click)="reject(group)">
+              <svg lucideIcon="x" [size]="22" /> Recusar (não pode ser oferecido)
+            </button>
+          </article>
+        } @empty {
+          <p class="done"><svg lucideIcon="check" [size]="22" /> Nenhuma sugestão esperando. Tudo em dia!</p>
+        }
+      }
+    }
+  </section>
+</main>

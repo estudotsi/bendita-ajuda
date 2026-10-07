@@ -1,7 +1,8 @@
-.note {
-  color: var(--color-text-muted);
-}
+/* Cartão, campos e botões vêm do styles.scss (.panel, .field-input...). */
 
-.btn {
-  max-width: 360px;
+.code-input {
+  font-size: var(--font-size-display);
+  font-weight: 800;
+  letter-spacing: 0.4em;
+  text-align: center;
 }

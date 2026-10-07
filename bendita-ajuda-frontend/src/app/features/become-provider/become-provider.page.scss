@@ -1,0 +1,111 @@
+/* Cartão, campos e botões vêm do styles.scss (.panel, .field-input...). */
+
+.step-count {
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+/* Botões de serviço: mesmo visual da grade da página inicial, mas marcando vários. */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  height: 100%;
+  min-height: 112px;
+  padding: var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-weight: 700;
+  line-height: 1.25;
+  transition: border-color var(--transition), background-color var(--transition);
+
+  &:hover {
+    border-color: var(--color-primary);
+  }
+}
+
+.tile--selected {
+  border: 3px solid var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.tile__icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+}
+
+.tile__check {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.found {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-2);
+  color: var(--color-primary);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+}
+
+.summary {
+  width: 100%;
+  margin: 0;
+  text-align: left;
+
+  dt {
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    font-weight: 700;
+  }
+
+  dd {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+  }
+}
+
+.pending-line {
+  display: block;
+}
+
+.pending {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.inline-icon {
+  display: inline-block;
+  vertical-align: -3px;
+}

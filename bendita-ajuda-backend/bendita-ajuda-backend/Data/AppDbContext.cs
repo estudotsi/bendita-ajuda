@@ -15,6 +15,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<CodigoVerificacao> CodigosVerificacao => Set<CodigoVerificacao>();
 
+    public DbSet<Prestador> Prestadores => Set<Prestador>();
+
+    public DbSet<Servico> Servicos => Set<Servico>();
+
+    public DbSet<ServicoSugerido> ServicosSugeridos => Set<ServicoSugerido>();
+
     /// <summary>Chaves do DataProtection: mantêm o cookie válido depois de reiniciar a API.</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
@@ -41,6 +47,59 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             codigo.Property(c => c.CodigoHash).HasMaxLength(64).IsRequired();
 
             codigo.HasIndex(c => new { c.Celular, c.CriadoEm });
+        });
+
+        modelBuilder.Entity<Prestador>(prestador =>
+        {
+            prestador.ToTable("Prestadores");
+            prestador.HasKey(p => p.UsuarioId);
+            prestador.Property(p => p.Cep).HasMaxLength(8).IsRequired();
+            prestador.Property(p => p.Bairro).HasMaxLength(100);
+            prestador.Property(p => p.Cidade).HasMaxLength(100).IsRequired();
+            prestador.Property(p => p.Uf).HasMaxLength(2).IsRequired();
+            prestador.Property(p => p.Bio).HasMaxLength(500);
+            prestador.Property(p => p.FotoUrl).HasMaxLength(500);
+
+            prestador.HasOne(p => p.Usuario)
+                .WithOne(u => u.Prestador)
+                .HasForeignKey<Prestador>(p => p.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Muitos para muitos: o EF cria e mantém a tabela de ligação sozinho.
+            prestador.HasMany(p => p.Servicos)
+                .WithMany(s => s.Prestadores)
+                .UsingEntity(
+                    "PrestadoresServicos",
+                    r => r.HasOne(typeof(Servico)).WithMany().HasForeignKey("ServicoId").OnDelete(DeleteBehavior.Restrict),
+                    l => l.HasOne(typeof(Prestador)).WithMany().HasForeignKey("PrestadorId").OnDelete(DeleteBehavior.Cascade),
+                    j => j.HasKey("PrestadorId", "ServicoId"));
+
+            prestador.HasIndex(p => new { p.Uf, p.Cidade, p.Bairro });
+        });
+
+        modelBuilder.Entity<ServicoSugerido>(sugerido =>
+        {
+            sugerido.ToTable("ServicosSugeridos");
+            sugerido.Property(s => s.Descricao).HasMaxLength(100).IsRequired();
+
+            sugerido.HasOne(s => s.Prestador)
+                .WithMany(p => p.Sugestoes)
+                .HasForeignKey(s => s.PrestadorId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            sugerido.HasIndex(s => s.CriadoEm);
+        });
+
+        modelBuilder.Entity<Servico>(servico =>
+        {
+            servico.ToTable("Servicos");
+            servico.Property(s => s.Id).HasMaxLength(50);
+            servico.Property(s => s.Nome).HasMaxLength(100).IsRequired();
+            servico.Property(s => s.NomePlural).HasMaxLength(100).IsRequired();
+            servico.Property(s => s.PalavrasChave).HasMaxLength(2000).IsRequired();
+
+            servico.HasIndex(s => s.Nome).IsUnique();
+            servico.HasData(ServicosIniciais.Todos);
         });
     }
 }

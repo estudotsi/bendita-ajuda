@@ -46,7 +46,54 @@
   padding-inline: var(--space-3);
 }
 
+.account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* No celular não cabe: nome e selos aparecem só da tela média para cima. */
+.account__who {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.account__hello {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Selo do lado do nome: Prestador / Admin. Também é link para a área de cada um. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    box-shadow: 0 0 0 2px var(--color-primary);
+  }
+}
+
+.badge--admin {
+  background: #fff1cc;
+  color: #7a4f00;
+}
+
 @media (min-width: 768px) {
+  .account__who {
+    display: flex;
+  }
+
   .brand__name {
     font-size: 1.5rem;
   }

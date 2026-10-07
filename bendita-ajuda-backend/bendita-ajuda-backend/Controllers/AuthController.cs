@@ -19,6 +19,7 @@ public class AuthController(AuthService authService) : ControllerBase
     public const string MensagemMuitosCodigos = "Você pediu muitos códigos. Espere alguns minutos e tente de novo.";
     private const string MensagemCelularInvalido = "Esse número de celular não parece certo. Confira o DDD e o número.";
     private const string MensagemCodigoInvalido = "Código errado ou vencido. Confira ou peça um novo.";
+    private const string MensagemFalhaNoEnvio = "Não conseguimos enviar o SMS agora. Tente de novo em alguns minutos.";
 
     /// <summary>Envia um código de 6 números para o celular.</summary>
     [HttpPost("celular/enviar-codigo")]
@@ -26,6 +27,7 @@ public class AuthController(AuthService authService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<MensagemResponse>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<MensagemResponse>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<MensagemResponse>(StatusCodes.Status503ServiceUnavailable)]
     public async Task<IActionResult> EnviarCodigo(EnviarCodigoRequest request, CancellationToken ct)
     {
         var resultado = await authService.EnviarCodigoAsync(request.Celular, ct);
@@ -34,6 +36,7 @@ public class AuthController(AuthService authService) : ControllerBase
         {
             ResultadoEnvioCodigo.CelularInvalido => BadRequest(new MensagemResponse(MensagemCelularInvalido)),
             ResultadoEnvioCodigo.LimiteExcedido => StatusCode(StatusCodes.Status429TooManyRequests, new MensagemResponse(MensagemMuitosCodigos)),
+            ResultadoEnvioCodigo.FalhaNoEnvio => StatusCode(StatusCodes.Status503ServiceUnavailable, new MensagemResponse(MensagemFalhaNoEnvio)),
             _ => NoContent(),
         };
     }
