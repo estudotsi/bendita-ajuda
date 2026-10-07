@@ -24,13 +24,36 @@ O público inclui muitos **idosos e pessoas com pouca instrução**, então a re
 
 ### Tela inicial (busca)
 1. Pergunta grande: **"Do que você precisa?"**
-2. Localização: "Perto de você — [bairro]", com opção de trocar.
+2. Localização: "Perto de você — [bairro, cidade]". A pessoa informa o **CEP** uma vez ("informar meu CEP");
+   fica guardado no aparelho (só bairro, cidade e UF). Sem CEP, mostra o Brasil todo.
 3. **Botões de serviço** com ícone e nome (caminho principal, sem digitar nada).
 4. Busca por **texto ou voz** (microfone), que também procura em palavras-chave
    (ex.: "pia", "vazamento" → Encanador).
 5. Lista de prestadores em cards: foto, nome, profissão, bairro, estrelas e o botão
    **"Chamar no WhatsApp"**.
 6. Rodapé: **"Quer oferecer seus serviços?"** → cadastro de prestador.
+
+### Busca (`GET /api/prestadores`)
+A regra fica no backend (`Services/BuscaPorTexto.cs`, com testes em `bendita-ajuda-backend.Tests`):
+- A frase é normalizada (sem acento, minúsculas) e perde as palavras vazias ("minha", "está", "preciso"...).
+- Um serviço combina se a frase tem o **nome** dele ou uma **palavra-chave** (`Servico.PalavrasChave`).
+  Palavra-chave de uma palavra também vale **enquanto digita** ("vaza" → vazamento) e **no plural**
+  ("tomadas" → tomada). Palavra-chave de várias palavras só vale **inteira** ("quadro de luz"; "quadro" sozinho não).
+- Também acha pelo **nome do prestador** ("José").
+- Ordem: mesmo bairro, mesma cidade, resto da UF. Só aparece prestador `Visivel` com pelo menos um serviço.
+- O **WhatsApp** do prestador só vem para quem entrou.
+
+**Quando não acha ninguém:**
+- Texto que não combinou com nenhum serviço → a tela diz "Não entendi o que você precisa" e mostra os
+  botões de serviço. O texto vai para `BuscasNaoEntendidas` (uma linha por texto, contando as repetições).
+- Serviço entendido sem ninguém na região → "Ainda não temos encanadores perto de você".
+  Vai para `BuscasSemPrestador` (serviço + cidade, contando as repetições).
+
+**Tela do admin "Buscas sem resultado" (`/admin/buscas`):**
+- Textos não entendidos, os mais repetidos primeiro. **Ensinar**: o admin escolhe o serviço (e pode encurtar
+  o texto para a palavra que importa); a palavra vira palavra-chave e as buscas que agora combinam somem da lista.
+  **Apagar**: texto sem sentido.
+- Serviços procurados sem prestador, por cidade: onde vale a pena chamar mais prestadores.
 
 ### Chamar no WhatsApp
 - É só um **link** que abre o WhatsApp do próprio celular do cliente, já numa conversa com o
@@ -120,6 +143,7 @@ Controllers/
   ServicosController.cs
   CepController.cs
   AdminSugestoesController.cs
+  AdminBuscasController.cs
 Data/
   AppDbContext.cs
   ServicosIniciais.cs     ← seed da lista de serviços
@@ -132,6 +156,8 @@ Services/                 ← EF Core (gravação + regras)
   AuthService.cs
   PrestadorService.cs
   SugestaoService.cs      ← admin resolvendo serviços sugeridos
+  BuscaService.cs         ← busca da tela inicial + buscas sem resultado
+  BuscaPorTexto.cs        ← frase → serviço (palavras-chave)
   Celular.cs              ← normalização do número
   Texto.cs, PalavrasChave.cs ← normalização de texto e sinônimos
   Cep/
@@ -177,13 +203,18 @@ Services/                 ← EF Core (gravação + regras)
 | Método | Rota | Quem | O que faz |
 |---|---|---|---|
 | GET | `/api/servicos` | todos | Lista de serviços (botões) |
-| GET | `/api/cep/{cep}` | logado | Bairro, cidade e UF do CEP |
+| GET | `/api/cep/{cep}` | todos | Bairro, cidade e UF do CEP (limite por IP) |
+| GET | `/api/prestadores` | todos | Busca: `?servico=` ou `?texto=`, mais `bairro`, `cidade`, `uf` (limite por IP) |
+| GET | `/api/prestadores/{id}` | todos | Página do prestador (404 se escondido ou sem serviço) |
 | GET | `/api/prestadores/eu` | logado | Meu cadastro de prestador (404 se não sou) |
 | POST | `/api/prestadores/eu` | logado | Vira prestador: serviços + CEP, tudo junto (201) |
 | GET | `/api/admin/sugestoes` | Admin | Sugestões pendentes |
 | POST | `/api/admin/sugestoes/{id}/similar` | Admin | `{ servicoId }`: liga ao serviço existente |
 | POST | `/api/admin/sugestoes/{id}/novo` | Admin | `{ nome, nomePlural }`: cria serviço e liga |
 | DELETE | `/api/admin/sugestoes/{id}` | Admin | Recusa |
+| GET | `/api/admin/buscas` | Admin | Buscas não entendidas e serviços sem prestador |
+| POST | `/api/admin/buscas/nao-entendidas/{id}/ensinar` | Admin | `{ servicoId, palavra }`: vira palavra-chave |
+| DELETE | `/api/admin/buscas/nao-entendidas/{id}` | Admin | Apaga |
 
 ### Regras do código de verificação
 - 6 dígitos gerados com `RandomNumberGenerator`; salvo **só o hash** (HMACSHA256).
@@ -219,6 +250,8 @@ Token gerado em **Meu Perfil** no portal TrackMax. Sem token, o código só apar
 | `Servico` | Id (texto, ex.: `eletricista`), Nome, NomePlural, PalavrasChave, Ordem |
 | `ServicoSugerido` | Id, Descricao, PrestadorId, CriadoEm (só existe enquanto está pendente) |
 | `CodigoVerificacao` | Id, Celular, CodigoHash, ExpiraEm, UsadoEm, Tentativas, CriadoEm |
+| `BuscaNaoEntendida` | Id, Texto (normalizado, único), Quantidade, PrimeiraVez, UltimaVez |
+| `BuscaSemPrestador` | ServicoId + Cidade + Uf (PK), Quantidade, UltimaVez |
 | `Contato` | Id, ClienteId, PrestadorId, CriadoEm |
 
 - `enum Papel { Cliente, Admin }`. **Ser prestador = ter registro em `Prestador`.**

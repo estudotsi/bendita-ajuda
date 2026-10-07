@@ -32,11 +32,16 @@
   <section #results class="container section results" aria-labelledby="titulo-lista">
     <app-provider-list
       [heading]="listHeading()"
-      [providers]="providers.value() ?? []"
-      [loading]="providers.isLoading()"
-      [failed]="!!providers.error()"
+      [providers]="providers()"
+      [loading]="search.isLoading()"
+      [failed]="!!search.error()"
       [canShowAll]="isFiltered()"
+      [notUnderstood]="notUnderstood()"
+      [missingCategory]="missingCategory()"
+      [hasLocation]="!!location()"
+      [categories]="categories.value() ?? []"
       (showAll)="showAll()"
+      (categoryPicked)="selectCategory($event)"
     />
   </section>
 </main>

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -72,22 +73,23 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 builder.Services.AddAuthorization();
 
-// Limite por IP no envio de código (além do limite por número feito no AuthService).
+// Limites por IP nas rotas abertas: envio de código (além do limite por número feito no AuthService),
+// busca e CEP. Operadoras de celular colocam muita gente atrás do mesmo IP: os limites são folgados.
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.OnRejected = (context, ct) => new ValueTask(
-        context.HttpContext.Response.WriteAsJsonAsync(new MensagemResponse(AuthController.MensagemMuitosCodigos), ct));
+    options.OnRejected = (context, ct) =>
+    {
+        var politica = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
+        var mensagem = politica == AuthController.PoliticaEnviarCodigo
+            ? AuthController.MensagemMuitosCodigos
+            : "Muitas buscas seguidas. Espere um minuto e tente de novo.";
+        return new ValueTask(context.HttpContext.Response.WriteAsJsonAsync(new MensagemResponse(mensagem), ct));
+    };
 
-    options.AddPolicy(AuthController.PoliticaEnviarCodigo, httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            httpContext.Connection.RemoteIpAddress?.ToString() ?? "desconhecido",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 10,
-                Window = TimeSpan.FromMinutes(15),
-                QueueLimit = 0,
-            }));
+    options.AddPolicy(AuthController.PoliticaEnviarCodigo, httpContext => LimitePorIp(httpContext, 10, TimeSpan.FromMinutes(15)));
+    options.AddPolicy(PrestadoresController.PoliticaBusca, httpContext => LimitePorIp(httpContext, 300, TimeSpan.FromMinutes(1)));
+    options.AddPolicy(CepController.PoliticaCep, httpContext => LimitePorIp(httpContext, 30, TimeSpan.FromMinutes(15)));
 });
 
 builder.Services.AddOptions<AuthOptions>()
@@ -98,11 +100,13 @@ builder.Services.AddOptions<AuthOptions>()
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PrestadorService>();
 builder.Services.AddScoped<SugestaoService>();
+builder.Services.AddScoped<BuscaService>();
 
 // Leituras com Dapper
 builder.Services.AddScoped<ServicoConsultas>();
 builder.Services.AddScoped<PrestadorConsultas>();
 builder.Services.AddScoped<SugestaoConsultas>();
+builder.Services.AddScoped<BuscaConsultas>();
 
 // CEP → bairro, cidade e UF (ViaCEP, gratuito)
 builder.Services.AddHttpClient<IConsultaCep, ConsultaCepViaCep>(http =>
@@ -159,3 +163,13 @@ static string PrimeiraMensagemDeErro(ModelStateDictionary modelState)
 
     return erro ?? "Não entendemos os dados enviados. Confira e tente de novo.";
 }
+
+static RateLimitPartition<string> LimitePorIp(HttpContext httpContext, int limite, TimeSpan janela) =>
+    RateLimitPartition.GetFixedWindowLimiter(
+        httpContext.Connection.RemoteIpAddress?.ToString() ?? "desconhecido",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = limite,
+            Window = janela,
+            QueueLimit = 0,
+        });

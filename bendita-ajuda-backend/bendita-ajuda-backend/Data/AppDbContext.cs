@@ -21,6 +21,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<ServicoSugerido> ServicosSugeridos => Set<ServicoSugerido>();
 
+    public DbSet<BuscaNaoEntendida> BuscasNaoEntendidas => Set<BuscaNaoEntendida>();
+
+    public DbSet<BuscaSemPrestador> BuscasSemPrestador => Set<BuscaSemPrestador>();
+
     /// <summary>Chaves do DataProtection: mantêm o cookie válido depois de reiniciar a API.</summary>
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
@@ -100,6 +104,25 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             servico.HasIndex(s => s.Nome).IsUnique();
             servico.HasData(ServicosIniciais.Todos);
+        });
+
+        // As duas tabelas de buscas são gravadas com INSERT ... ON DUPLICATE KEY UPDATE (BuscaService):
+        // a chave única é o que junta as repetições numa linha só.
+        modelBuilder.Entity<BuscaNaoEntendida>(busca =>
+        {
+            busca.ToTable("BuscasNaoEntendidas");
+            busca.Property(b => b.Texto).HasMaxLength(100).IsRequired();
+
+            busca.HasIndex(b => b.Texto).IsUnique();
+        });
+
+        modelBuilder.Entity<BuscaSemPrestador>(busca =>
+        {
+            busca.ToTable("BuscasSemPrestador");
+            busca.HasKey(b => new { b.ServicoId, b.Cidade, b.Uf });
+            busca.Property(b => b.ServicoId).HasMaxLength(50);
+            busca.Property(b => b.Cidade).HasMaxLength(100);
+            busca.Property(b => b.Uf).HasMaxLength(2);
         });
     }
 }

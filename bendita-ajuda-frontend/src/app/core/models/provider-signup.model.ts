@@ -37,3 +37,28 @@ export interface PendingSuggestion {
   cidade: string;
   uf: string;
 }
+
+/** Tela "Buscas sem resultado" do admin (GET /api/admin/buscas). */
+export interface UnmatchedSearches {
+  /** Textos que não combinaram com nenhum serviço, os mais repetidos primeiro. */
+  naoEntendidas: NotUnderstoodSearch[];
+  /** Serviços procurados em cidades onde ainda não há prestador deles. */
+  semPrestador: SearchWithoutProvider[];
+}
+
+export interface NotUnderstoodSearch {
+  id: number;
+  texto: string;
+  quantidade: number;
+  ultimaVez: string;
+}
+
+export interface SearchWithoutProvider {
+  servicoId: string;
+  servicoNome: string;
+  /** Vazio quando quem buscou não tinha informado o CEP. */
+  cidade: string;
+  uf: string;
+  quantidade: number;
+  ultimaVez: string;
+}

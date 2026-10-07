@@ -21,6 +21,26 @@
     <p class="message__title">Não conseguimos carregar a lista agora.</p>
     <p>Verifique sua internet e tente de novo em instantes.</p>
   </div>
+} @else if (notUnderstood()) {
+  <div class="message">
+    <span class="message__icon"><svg lucideIcon="message-circle-question-mark" [size]="40" /></span>
+    <p class="message__title">Não entendi o que você precisa.</p>
+    <p>Toque no serviço:</p>
+    <app-category-grid class="message__grid" [categories]="categories()" (selected)="categoryPicked.emit($event)" />
+  </div>
+} @else if (providers().length === 0 && missingCategory()) {
+  @let category = missingCategory()!;
+  <div class="message">
+    <span class="message__icon"><svg lucideIcon="search-x" [size]="40" /></span>
+    <p class="message__title">
+      Ainda não temos {{ category.pluralName.toLowerCase() }}{{ hasLocation() ? ' perto de você' : '' }}.
+    </p>
+    <p>Estamos chamando mais profissionais. Enquanto isso, veja os outros serviços.</p>
+    <button type="button" class="btn btn--primary" aria-label="Ver todos os profissionais" (click)="showAll.emit()">
+      <svg lucideIcon="layout-grid" [size]="22" />
+      Ver todos
+    </button>
+  </div>
 } @else if (providers().length === 0) {
   <div class="message">
     <span class="message__icon"><svg lucideIcon="search-x" [size]="40" /></span>

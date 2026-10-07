@@ -1,0 +1,64 @@
+/* Cartão, campos e botões vêm do styles.scss (.panel, .field-input...). */
+
+.subtitle {
+  align-self: stretch;
+  margin-top: var(--space-4);
+  font-size: var(--font-size-lg);
+  text-align: left;
+}
+
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-5);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: left;
+
+  h3 {
+    font-size: var(--font-size-lg);
+  }
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+
+  .field-input {
+    flex: 1 1 200px;
+    height: 56px;
+  }
+}
+
+.remove {
+  align-self: flex-start;
+  color: var(--color-danger);
+}
+
+.done {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+.demand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+
+  li {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+}

@@ -10,14 +10,22 @@
     <section class="card">
       <app-avatar [name]="p.name" [photoUrl]="p.photoUrl" [size]="120" />
       <h1>{{ p.name }}</h1>
-      <p class="card__job">{{ p.category.name }}</p>
+      <p class="card__job">{{ serviceNames() }}</p>
       <p class="card__place">
         <svg lucideIcon="map-pin" [size]="20" />
-        {{ p.neighborhood }}
+        {{ p.place }}
       </p>
-      <app-star-rating [rating]="p.rating" [reviewCount]="p.reviewCount" />
+      @if (p.bio) {
+        <p class="card__bio">{{ p.bio }}</p>
+      }
       <app-whatsapp-button class="card__cta" [provider]="p" />
       <p class="card__soon">Em breve: fotos de trabalhos, horários e o que os clientes disseram.</p>
+    </section>
+  } @else if (provider.error()) {
+    <section class="card" role="alert">
+      <h1>Não conseguimos carregar agora.</h1>
+      <p>Verifique sua internet e tente de novo em instantes.</p>
+      <button type="button" class="btn btn--primary" (click)="provider.reload()">Tentar de novo</button>
     </section>
   } @else {
     <section class="card">

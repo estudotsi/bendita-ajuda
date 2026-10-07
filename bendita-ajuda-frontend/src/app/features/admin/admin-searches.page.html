@@ -1,0 +1,92 @@
+<main id="conteudo" class="container page-shell">
+  <a routerLink="/" class="btn btn--link page-back">
+    <svg lucideIcon="arrow-left" [size]="22" />
+    Voltar
+  </a>
+
+  <section class="panel panel--wide">
+    <app-admin-tabs />
+    <h1>Buscas sem resultado</h1>
+
+    @switch (mode()) {
+      @case ('loading') {
+        <svg lucideIcon="loader-circle" [size]="40" class="spin" />
+      }
+      @case ('forbidden') {
+        <p class="panel__text">Esta página é só para administradores.</p>
+      }
+      @case ('failed') {
+        <p class="panel__text">Não conseguimos carregar as buscas.</p>
+        <button type="button" class="btn btn--primary" (click)="load()">Tentar de novo</button>
+      }
+      @case ('ready') {
+        <p class="field-error" role="alert">{{ error() }}</p>
+        @if (done()) {
+          <p class="done" role="status"><svg lucideIcon="check" [size]="22" /> {{ done() }}</p>
+        }
+
+        <h2 class="subtitle">O que buscaram e não entendemos</h2>
+        <p class="panel__text">
+          Ensine a palavra a um serviço: da próxima vez, quem buscar assim encontra. Pode encurtar o texto para
+          a palavra que importa (ex.: "minha porta está emperrada" → "emperrada").
+        </p>
+
+        @for (search of notUnderstood(); track search.id) {
+          @let busy = busyId() === search.id;
+          <article class="search" [attr.aria-busy]="busy">
+            <header>
+              <h3>“{{ search.texto }}”</h3>
+              <p class="panel__note">
+                {{ search.quantidade }} {{ search.quantidade === 1 ? 'vez' : 'vezes' }}, a última em
+                {{ search.ultimaVez | date: 'dd/MM/yyyy' }}
+              </p>
+            </header>
+
+            <div class="row">
+              <input #word class="field-input" aria-label="Palavra a ensinar" [value]="search.texto" />
+              <select #service class="field-input" aria-label="Serviço">
+                <option value="">É o mesmo que...</option>
+                @for (option of services(); track option.id) {
+                  <option [value]="option.id">{{ option.nome }}</option>
+                }
+              </select>
+              <button
+                type="button"
+                class="btn btn--primary"
+                [disabled]="busy"
+                (click)="teach(search, word.value, service.value)"
+              >
+                <svg lucideIcon="check" [size]="22" /> Ensinar
+              </button>
+            </div>
+
+            <button type="button" class="btn btn--link remove" [disabled]="busy" (click)="remove(search)">
+              <svg lucideIcon="x" [size]="22" /> Apagar (não faz sentido)
+            </button>
+          </article>
+        } @empty {
+          <p class="done"><svg lucideIcon="check" [size]="22" /> Nenhuma busca esperando. Tudo em dia!</p>
+        }
+
+        <h2 class="subtitle">Serviços procurados sem ninguém na região</h2>
+        <p class="panel__text">Onde vale a pena chamar mais prestadores.</p>
+
+        @if (withoutProvider().length) {
+          <ul class="demand">
+            @for (row of withoutProvider(); track row.servicoId + row.cidade + row.uf) {
+              <li>
+                <strong>{{ row.servicoNome }}</strong> em {{ place(row) }}
+                <span class="panel__note">
+                  — {{ row.quantidade }} {{ row.quantidade === 1 ? 'busca' : 'buscas' }}, a última em
+                  {{ row.ultimaVez | date: 'dd/MM/yyyy' }}
+                </span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="panel__note">Ninguém ficou sem prestador até agora.</p>
+        }
+      }
+    }
+  </section>
+</main>

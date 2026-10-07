@@ -10,7 +10,7 @@
         <div class="account__who">
           <span class="account__hello">Olá, {{ firstName() }}</span>
           @if (auth.isAdmin()) {
-            <a routerLink="/admin" class="badge badge--admin" aria-label="Admin: ver serviços sugeridos">
+            <a routerLink="/admin" class="badge badge--admin" aria-label="Admin: serviços sugeridos e buscas sem resultado">
               <svg lucideIcon="shield-check" [size]="16" /> Admin
             </a>
           }

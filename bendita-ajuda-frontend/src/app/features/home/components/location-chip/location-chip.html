@@ -1,42 +1,49 @@
 <div class="loc">
   <p class="loc__chip">
     <svg lucideIcon="map-pin" [size]="22" />
-    <span>Perto de você — <strong>{{ location().neighborhood }}</strong></span>
+    @if (label(); as place) {
+      <span>Perto de você — <strong>{{ place }}</strong></span>
+    } @else {
+      <span>Mostrando o Brasil todo</span>
+    }
   </p>
   <button
     type="button"
     class="btn btn--link"
-    [attr.aria-label]="isChoosing() ? 'Fechar a lista de bairros' : 'Trocar o bairro'"
-    aria-controls="lista-bairros"
+    [attr.aria-label]="isChoosing() ? 'Fechar' : location() ? 'Trocar o local' : 'Informar meu CEP'"
+    aria-controls="informar-cep"
     [attr.aria-expanded]="isChoosing()"
-    (click)="isChoosing.set(!isChoosing())"
+    (click)="toggle()"
   >
-    {{ isChoosing() ? 'fechar' : 'trocar' }}
+    {{ isChoosing() ? 'fechar' : location() ? 'trocar' : 'informar meu CEP' }}
   </button>
 </div>
 
 @if (isChoosing()) {
-  <div id="lista-bairros" class="panel">
-    <p class="panel__title">Escolha o seu bairro:</p>
-    @if (neighborhoods.isLoading()) {
-      <p>Carregando os bairros...</p>
-    } @else {
-      <ul class="panel__list">
-        @for (name of neighborhoods.value() ?? []; track name) {
-          @let isCurrent = name === location().neighborhood;
-          <li>
-            <button
-              type="button"
-              class="panel__option"
-              [class.panel__option--current]="isCurrent"
-              [attr.aria-pressed]="isCurrent"
-              (click)="choose(name)"
-            >
-              {{ name }}
-            </button>
-          </li>
+  <form id="informar-cep" class="panel" (submit)="confirm($event)">
+    <label for="cep-cliente" class="panel__title">Qual o seu CEP? Assim mostramos quem está perto.</label>
+    <div class="panel__row">
+      <input
+        id="cep-cliente"
+        class="field-input"
+        type="text"
+        inputmode="numeric"
+        autocomplete="postal-code"
+        placeholder="00000-000"
+        [value]="cep()"
+        [attr.aria-invalid]="!!error()"
+        aria-describedby="erro-cep"
+        (input)="onCepInput($event)"
+      />
+      <button type="submit" class="btn btn--primary" [disabled]="busy()">
+        @if (busy()) {
+          <svg lucideIcon="loader-circle" [size]="22" class="spin" />
+        } @else {
+          <svg lucideIcon="check" [size]="22" />
         }
-      </ul>
-    }
-  </div>
+        Pronto
+      </button>
+    </div>
+    <p id="erro-cep" class="field-error" role="alert">{{ error() }}</p>
+  </form>
 }

@@ -37,6 +37,10 @@
   color: var(--color-text-muted);
 }
 
+.card__bio {
+  white-space: pre-line;
+}
+
 .card__cta {
   width: 100%;
   margin-top: var(--space-4);

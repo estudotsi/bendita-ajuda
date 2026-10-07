@@ -1,18 +1,46 @@
 using System.Security.Claims;
 using bendita_ajuda_backend.Data.Consultas;
 using bendita_ajuda_backend.Dtos;
+using bendita_ajuda_backend.Dtos.Busca;
 using bendita_ajuda_backend.Dtos.Prestadores;
 using bendita_ajuda_backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace bendita_ajuda_backend.Controllers;
 
 [ApiController]
 [Route("api/prestadores")]
 [Authorize]
-public class PrestadoresController(PrestadorService prestadorService, PrestadorConsultas consultas) : ControllerBase
+public class PrestadoresController(
+    PrestadorService prestadorService, BuscaService buscaService, PrestadorConsultas consultas) : ControllerBase
 {
+    /// <summary>Nome da política do rate limiter (por IP) da busca, que é aberta a todos.</summary>
+    public const string PoliticaBusca = "busca";
+
+    /// <summary>Busca da tela inicial: por serviço (botão) ou por texto/voz. Não precisa entrar.</summary>
+    [HttpGet]
+    [AllowAnonymous]
+    [EnableRateLimiting(PoliticaBusca)]
+    [ProducesResponseType<BuscaPrestadoresResponse>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Buscar([FromQuery] BuscaPrestadoresRequest request, CancellationToken ct) =>
+        Ok(await buscaService.BuscarAsync(request, EstaLogado(), ct));
+
+    /// <summary>Página do prestador.</summary>
+    [HttpGet("{id:guid}")]
+    [AllowAnonymous]
+    [EnableRateLimiting(PoliticaBusca)]
+    [ProducesResponseType<PrestadorResumoResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<MensagemResponse>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> PorId(Guid id, CancellationToken ct)
+    {
+        var prestador = await consultas.PorIdAsync(id, EstaLogado(), ct);
+        return prestador is null
+            ? NotFound(new MensagemResponse("Não encontramos este profissional."))
+            : Ok(prestador);
+    }
+
     /// <summary>Meu cadastro de prestador (404 se ainda não sou prestador).</summary>
     [HttpGet("eu")]
     [ProducesResponseType<MeuCadastroResponse>(StatusCodes.Status200OK)]
@@ -54,4 +82,7 @@ public class PrestadoresController(PrestadorService prestadorService, PrestadorC
     }
 
     private Guid UsuarioId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    /// <summary>O WhatsApp do prestador só vai para quem entrou.</summary>
+    private bool EstaLogado() => User.Identity?.IsAuthenticated == true;
 }

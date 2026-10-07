@@ -23,7 +23,7 @@ const SEARCH_DEBOUNCE_MS = 400;
 })
 export class HomePage {
   private readonly providerService = inject(ProviderService);
-  private readonly location = inject(LocationService).current;
+  protected readonly location = inject(LocationService).current;
   private readonly resultsSection = viewChild.required<ElementRef<HTMLElement>>('results');
 
   protected readonly selectedCategoryId = signal<string | null>(null);
@@ -54,22 +54,44 @@ export class HomePage {
   private readonly query = computed<ProviderQuery>(() => ({
     categoryId: this.selectedCategoryId(),
     text: this.selectedCategoryId() ? '' : this.searchTerm(),
-    neighborhood: this.location().neighborhood,
+    location: this.location(),
   }));
 
-  protected readonly providers = rxResource({
+  protected readonly search = rxResource({
     params: () => this.query(),
     stream: ({ params }) => this.providerService.searchProviders(params),
   });
 
+  protected readonly providers = computed(() => this.search.value()?.providers ?? []);
+
   protected readonly isFiltered = computed(() => !!this.selectedCategoryId() || !!this.searchTerm());
 
+  /** Escreveu/falou algo e não entendemos qual serviço é: a lista mostra os botões de serviço. */
+  protected readonly notUnderstood = computed(() => {
+    const result = this.search.value();
+    return (
+      !!this.searchTerm() &&
+      !this.selectedCategoryId() &&
+      !!result &&
+      result.matchedCategories.length === 0 &&
+      result.providers.length === 0
+    );
+  });
+
+  /** Entendemos o serviço, mas ainda não há ninguém dele: "Ainda não temos Encanadores...". */
+  protected readonly missingCategory = computed(() => {
+    const result = this.search.value();
+    if (!result || result.providers.length > 0) return null;
+    return this.selectedCategory() ?? (result.matchedCategories.length === 1 ? result.matchedCategories[0] : null);
+  });
+
   protected readonly listHeading = computed(() => {
+    const near = this.location() ? ' perto de você' : '';
     const category = this.selectedCategory();
-    if (category) return `${category.pluralName} perto de você`;
+    if (category) return `${category.pluralName}${near}`;
     const term = this.searchTerm();
     if (term) return `Quem pode ajudar com “${term}”`;
-    return 'Perto de você';
+    return this.location() ? 'Perto de você' : 'Profissionais';
   });
 
   protected selectCategory(id: string): void {

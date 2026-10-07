@@ -18,9 +18,17 @@ export class WhatsappService {
       return;
     }
 
+    // O número só vem da API para quem entrou. Se a lista foi carregada antes de entrar,
+    // a página do prestador busca de novo, já com o número.
+    if (!provider.whatsapp) {
+      this.router.navigate(['/prestador', provider.id]);
+      return;
+    }
+
     window.open(this.buildUrl(provider), '_blank', 'noopener');
   }
 
+  /** Só chamar com `provider.whatsapp` preenchido. */
   buildUrl(provider: Provider): string {
     const firstName = provider.name.split(' ')[0];
     const service = provider.category.name.toLowerCase();

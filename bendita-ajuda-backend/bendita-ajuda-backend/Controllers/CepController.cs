@@ -1,16 +1,21 @@
 using bendita_ajuda_backend.Dtos;
 using bendita_ajuda_backend.Dtos.Cep;
 using bendita_ajuda_backend.Services.Cep;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace bendita_ajuda_backend.Controllers;
 
 [ApiController]
 [Route("api/cep")]
-[Authorize] // só quem está se cadastrando como prestador precisa
+// Aberto: o cliente informa o CEP para ver quem está perto, sem precisar entrar.
+// O limite por IP evita usar a API como consulta de CEP grátis.
+[EnableRateLimiting(PoliticaCep)]
 public class CepController(IConsultaCep consultaCep) : ControllerBase
 {
+    /// <summary>Nome da política do rate limiter (por IP) da consulta de CEP.</summary>
+    public const string PoliticaCep = "cep";
+
     public const string MensagemCepInvalido = "O CEP tem 8 números. Confira e digite de novo.";
     public const string MensagemCepNaoEncontrado = "Não achamos esse CEP. Confira os números.";
     public const string MensagemCepIndisponivel = "Não conseguimos consultar o CEP agora. Tente de novo em alguns minutos.";

@@ -13,4 +13,11 @@ export class ProviderCard {
   readonly provider = input.required<Provider>();
 
   protected readonly look = computed(() => categoryAppearance(this.provider().category.id));
+
+  /** "Encanador" ou "Encanador, Pedreiro": o que combinou com a busca vem primeiro. */
+  protected readonly serviceNames = computed(() =>
+    this.provider()
+      .services.map((s) => s.name)
+      .join(', '),
+  );
 }

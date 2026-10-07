@@ -1,0 +1,28 @@
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-self: stretch;
+}
+
+.tabs__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--color-primary);
+  }
+}
+
+.tabs__link--active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}

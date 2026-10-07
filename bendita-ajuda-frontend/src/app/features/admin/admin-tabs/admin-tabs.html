@@ -1,0 +1,19 @@
+<nav class="tabs" aria-label="Telas do admin">
+  <a
+    routerLink="/admin"
+    routerLinkActive="tabs__link--active"
+    ariaCurrentWhenActive="page"
+    [routerLinkActiveOptions]="{ exact: true }"
+    class="tabs__link"
+  >
+    Serviços sugeridos
+  </a>
+  <a
+    routerLink="/admin/buscas"
+    routerLinkActive="tabs__link--active"
+    ariaCurrentWhenActive="page"
+    class="tabs__link"
+  >
+    Buscas sem resultado
+  </a>
+</nav>

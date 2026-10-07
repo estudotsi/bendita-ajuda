@@ -1,8 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
-import { LocationService } from '../../../../data/location.service';
+import { Component, computed, inject, signal } from '@angular/core';
+import { apiErrorMessage } from '../../../../core/services/auth.service';
+import { cepDigits, formatCep } from '../../../../core/utils/cep';
+import { LocationService, locationLabel } from '../../../../data/location.service';
 
-/** "Perto de você — Asa Norte" com opção de trocar o bairro. */
+/** "Perto de você — Asa Norte, Brasília" com opção de trocar, informando o CEP. */
 @Component({
   selector: 'app-location-chip',
   standalone: false,
@@ -13,16 +14,51 @@ export class LocationChip {
   private readonly locationService = inject(LocationService);
 
   protected readonly location = this.locationService.current;
-  protected readonly isChoosing = signal(false);
-
-  /** Só busca a lista de bairros quando a pessoa pede para trocar. */
-  protected readonly neighborhoods = rxResource({
-    params: () => (this.isChoosing() ? true : undefined),
-    stream: () => this.locationService.getNeighborhoods(),
+  protected readonly label = computed(() => {
+    const location = this.location();
+    return location ? locationLabel(location) : null;
   });
 
-  protected choose(neighborhood: string): void {
-    this.locationService.setNeighborhood(neighborhood);
-    this.isChoosing.set(false);
+  protected readonly isChoosing = signal(false);
+  protected readonly cep = signal('');
+  protected readonly busy = signal(false);
+  protected readonly error = signal('');
+
+  protected toggle(): void {
+    this.isChoosing.set(!this.isChoosing());
+    this.cep.set('');
+    this.error.set('');
+  }
+
+  protected onCepInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.cep.set(formatCep(input.value));
+    input.value = this.cep();
+    this.error.set('');
+    // Com os 8 números já procura: a pessoa não precisa achar o botão.
+    if (cepDigits(this.cep()).length === 8) this.confirm();
+  }
+
+  protected confirm(event?: Event): void {
+    event?.preventDefault();
+    if (this.busy()) return;
+
+    const digits = cepDigits(this.cep());
+    if (digits.length !== 8) {
+      this.error.set('O CEP tem 8 números. Confira e digite de novo.');
+      return;
+    }
+
+    this.busy.set(true);
+    this.locationService.setFromCep(digits).subscribe({
+      next: () => {
+        this.busy.set(false);
+        this.isChoosing.set(false);
+      },
+      error: (err) => {
+        this.busy.set(false);
+        this.error.set(apiErrorMessage(err));
+      },
+    });
   }
 }

@@ -1,8 +1,8 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { ProviderService } from '../../data/provider.service';
 
-/** Página do prestador (placeholder: só o básico + botão de chamar). */
+/** Página do prestador: serviços, local, apresentação e o botão de chamar. */
 @Component({
   selector: 'app-provider-profile-page',
   standalone: false,
@@ -19,4 +19,8 @@ export class ProviderProfilePage {
     params: () => this.id(),
     stream: ({ params }) => this.providerService.getProviderById(params),
   });
+
+  protected readonly serviceNames = computed(() =>
+    (this.provider.value()?.services ?? []).map((s) => s.name).join(', '),
+  );
 }
